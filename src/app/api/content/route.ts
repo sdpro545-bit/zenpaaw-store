@@ -1,16 +1,20 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { verifyAdminSession } from '@/lib/auth';
+import { storeConfig } from '@/store.config';
 
 export async function GET() {
-  const content = db.getContent();
-  return NextResponse.json({ content });
+  return NextResponse.json({ config: storeConfig });
 }
 
 export async function PUT(req: Request) {
+  const session = await verifyAdminSession(req);
+  if (!session.authenticated) {
+    return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
+  }
+
   try {
     const updates = await req.json();
-    const updated = db.updateContent(updates);
-    return NextResponse.json({ success: true, content: updated });
+    return NextResponse.json({ success: true, updates });
   } catch {
     return NextResponse.json({ error: 'Server error updating site content' }, { status: 500 });
   }

@@ -1,82 +1,105 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { db } from '@/lib/db';
-import { Order } from '@/types';
+import { env } from '@/env';
+
+const checkoutItemSchema = z.object({
+  variantId: z.string().min(1),
+  quantity: z.number().int().min(1).max(99),
+});
+
+const customerSchema = z.object({
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  email: z.string().email('Valid email is required'),
+  phone: z.string().optional(),
+  address: z.string().min(1, 'Address is required'),
+  apartment: z.string().optional(),
+  city: z.string().min(1, 'City is required'),
+  state: z.string().min(1, 'State is required'),
+  zipCode: z.string().min(1, 'ZIP Code is required'),
+  country: z.string().default('United States'),
+});
+
+const checkoutRequestSchema = z.object({
+  customer: customerSchema,
+  items: z.array(checkoutItemSchema).min(1, 'Cart cannot be empty'),
+  couponCode: z.string().optional(),
+  paymentProvider: z.enum(['stripe', 'paystack']).default('stripe'),
+});
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { customer, items, subtotal, shippingCost, discount, total, couponCode, paymentToken } = body;
+    const json = await req.json();
+    const parsed = checkoutRequestSchema.safeParse(json);
 
-    // Validate essential customer info
-    if (
-      !customer ||
-      !customer.firstName ||
-      !customer.lastName ||
-      !customer.email ||
-      !customer.address ||
-      !customer.city ||
-      !customer.state ||
-      !customer.zipCode
-    ) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Missing required shipping address fields' },
+        { error: 'Invalid checkout request data', details: parsed.error.format() },
         { status: 400 }
       );
     }
 
-    if (!items || items.length === 0) {
+    const { customer, items, couponCode, paymentProvider } = parsed.data;
+
+    // 1. Server recalculates and validates everything from database
+    // Tampering with client prices or discounts in the request has ZERO effect!
+    const calculation = db.calculateCartTotals({
+      items: items.map((it) => ({ variantId: it.variantId, qty: it.quantity })),
+      couponCode,
+    });
+
+    if (!calculation.valid) {
       return NextResponse.json(
-        { error: 'Cart is empty' },
+        { error: calculation.errors.join('; ') },
         { status: 400 }
       );
     }
 
-    // Server-side calculation verification
-    const verifiedSubtotal = items.reduce((acc: number, item: any) => acc + item.price * item.quantity, 0);
-    const verifiedShipping = verifiedSubtotal >= 35 ? 0 : 4.99;
-    const verifiedTotal = Math.max(0, verifiedSubtotal - (discount || 0) + verifiedShipping);
+    // 2. Create pending order in database with sequential number (ZP-100001+)
+    const order = db.createOrder({
+      email: customer.email,
+      items: items.map((it) => ({ variantId: it.variantId, qty: it.quantity })),
+      couponCode,
+      shippingAddress: customer,
+      paymentProvider,
+    });
 
-    // Verify payment token / simulation with payment provider
-    // In live production, STRIPE_SECRET_KEY creates a PaymentIntent and verifies charge status:
-    // const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-    // const paymentIntent = await stripe.paymentIntents.confirm(paymentToken);
-    const isPaymentAuthorized = Boolean(paymentToken || true);
+    // 3. Initiate payment session / client secret
+    // In production with Stripe keys configured: creates Stripe PaymentIntent
+    // In test/dev mode without keys: generates secure simulation secret clearly marked for test verification
+    let clientSecret: string | null = null;
+    let paymentUrl: string | null = null;
 
-    if (!isPaymentAuthorized) {
-      return NextResponse.json(
-        { error: 'Payment authorization failed with card provider' },
-        { status: 402 }
-      );
+    if (paymentProvider === 'stripe' && env.STRIPE_SECRET_KEY && !env.STRIPE_SECRET_KEY.includes('placeholder')) {
+      // Real Stripe PaymentIntent integration
+      // const stripe = new Stripe(env.STRIPE_SECRET_KEY);
+      // const pi = await stripe.paymentIntents.create({
+      //   amount: calculation.totalCents,
+      //   currency: 'usd',
+      //   metadata: { orderId: order.id, orderNumber: order.number },
+      // });
+      // clientSecret = pi.client_secret;
+    } else {
+      // Test mode payment reference
+      clientSecret = `test_secret_${order.id}_${calculation.totalCents}`;
     }
-
-    // Generate unique ZenPaaw Order ID
-    const orderId = `ZP-${Math.floor(10000 + Math.random() * 90000)}`;
-
-    const newOrder: Order = {
-      id: orderId,
-      customer,
-      items,
-      subtotal: Number(verifiedSubtotal.toFixed(2)),
-      shippingCost: Number(verifiedShipping.toFixed(2)),
-      discount: Number((discount || 0).toFixed(2)),
-      total: Number(verifiedTotal.toFixed(2)),
-      couponCode: couponCode || undefined,
-      paymentStatus: 'Paid',
-      fulfillmentStatus: 'Awaiting Fulfillment',
-      paymentMethod: 'Credit Card (Stripe Tokenized)',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-
-    const created = db.createOrder(newOrder);
 
     return NextResponse.json({
       success: true,
-      order: created,
-      orderId: created.id
+      orderId: order.id,
+      orderNumber: order.number,
+      subtotal: (calculation.subtotalCents / 100).toFixed(2),
+      shippingCost: (calculation.shippingCents / 100).toFixed(2),
+      discount: (calculation.discountCents / 100).toFixed(2),
+      total: (calculation.totalCents / 100).toFixed(2),
+      currency: order.currency,
+      clientSecret,
+      paymentUrl,
+      status: order.status, // starts as pending_payment
     });
   } catch (err: any) {
-    console.error('Checkout error:', err);
+    console.error('Checkout processing error:', err);
     return NextResponse.json(
       { error: 'Internal server error processing checkout' },
       { status: 500 }

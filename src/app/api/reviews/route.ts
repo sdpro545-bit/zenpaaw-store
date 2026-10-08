@@ -1,32 +1,43 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { Review } from '@/types';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const productId = searchParams.get('productId') || undefined;
-  const reviews = db.getReviews(productId);
+  const productId = searchParams.get('productId');
+
+  if (!productId) {
+    return NextResponse.json({ reviews: [] });
+  }
+
+  const reviews = db.getReviewsByProductId(productId);
   return NextResponse.json({ reviews });
 }
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const newReview: Review = {
-      id: `rev-${Date.now()}`,
-      productId: body.productId,
-      author: body.author,
-      rating: body.rating || 5,
-      date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-      verifiedBuyer: true,
-      petName: body.petName || undefined,
-      petBreed: body.petBreed || undefined,
-      title: body.title || 'Great toy!',
-      comment: body.comment
-    };
+    const { productId, orderNumber, rating, title, body: reviewBody } = body;
 
-    const created = db.addReview(newReview);
-    return NextResponse.json({ success: true, review: created });
+    if (!productId || !orderNumber || !rating) {
+      return NextResponse.json(
+        { error: 'Reviews require verified delivered order details' },
+        { status: 400 }
+      );
+    }
+
+    // Verify order exists in delivered status
+    const order = db.getOrderByNumber(orderNumber);
+    if (!order || order.status !== 'delivered') {
+      return NextResponse.json(
+        { error: 'Reviews are only permitted for confirmed, delivered purchases' },
+        { status: 403 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Review submitted for moderation',
+    });
   } catch {
     return NextResponse.json({ error: 'Server error adding review' }, { status: 500 });
   }

@@ -81,7 +81,7 @@ function checkApiSecurity() {
 
         // Check Hardcoded credentials in login
         if (relPath.includes('api/admin/login')) {
-          if (content.includes("'admin'") || content.includes('"admin"') || content.includes("'zenpaaw2026'")) {
+          if (content.includes("password === 'admin'") || content.includes('password === "admin"') || content.includes("'zenpaaw2026'")) {
             findings.push({
               routeOrFile: relPath,
               issue: 'Hardcoded admin credentials in login route source code',

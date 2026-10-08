@@ -9,3 +9,5 @@ This document records architectural, engineering, and operational decisions made
 | 2026-10-08 | DEC-003 | Implement Stripe & Paystack pluggable adapter architecture | Supports global checkout with test mode simulation when keys are unconfigured. |
 | 2026-10-08 | DEC-004 | Use `jose` with HS256 JWT in `httpOnly`, `Secure`, `SameSite=Lax` cookies for Admin | Prevents token theft via XSS while eliminating localStorage session storage. |
 | 2026-10-08 | DEC-005 | Use `motion/react` with spring physics and reduced-motion fallback | Meets 60fps micro-interaction requirements while ensuring accessibility compliance. |
+| 2026-10-08 | DEC-006 | Server-side pricing recalculation strictly rejects client-tampered totals | Protects business margins by deriving all prices, shipping, and discounts directly from database records. |
+| 2026-10-08 | DEC-007 | Node 24 native DatabaseSync for `.zenpaaw.sqlite` persistence with sequential `ZP-100001` numbering | Eliminates data loss across server restarts without requiring external service configuration. |
