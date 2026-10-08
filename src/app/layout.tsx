@@ -1,46 +1,60 @@
 import type { Metadata } from 'next';
-import { Plus_Jakarta_Sans } from 'next/font/google';
+import { Plus_Jakarta_Sans, Outfit } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '@/context/CartContext';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { CartDrawer } from '@/components/CartDrawer';
+import { Suspense } from 'react';
+import { LogoIntro } from '@/components/LogoIntro';
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-sans',
-  weight: ['400', '500', '600', '700', '800'],
+  weight: ['400', '500', '600', '700'],
+});
+
+const outfit = Outfit({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-display',
+  weight: ['500', '600', '700', '800', '900'],
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://zenpaaw.com'),
-  title: 'ZenPaaw™ | Better Play. Happier Pets. | 3-in-1 Pet Toys',
+  title: 'ZenPaaw | Pet Toys for Dogs and Cats',
   description:
-    'Discover the ZenPaaw 3-in-1 Pet Toy: one toy with three ways to play—play, chew, and fetch. Thoughtfully designed pet toys for happier, active dogs.',
+    'Chew toys, fetch toys, tug ropes, and puzzle feeders for dogs and cats. Every order ships with tracking.',
   keywords: [
     'ZenPaaw',
-    '3-in-1 pet toy',
     'dog toys',
-    'interactive dog toys',
+    'cat toys',
     'chew toys',
-    'dental dog toy',
-    'pet products',
-    'fetch toy'
+    'puzzle feeders',
+    'pet toys',
+    'puppy toys'
   ],
   authors: [{ name: 'ZenPaaw' }],
+  manifest: '/manifest.webmanifest',
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/favicon.ico',
+    apple: '/apple-icon.png',
+  },
   openGraph: {
-    title: 'ZenPaaw™ | One Toy. Three Ways to Play.',
+    title: 'ZenPaaw | Pet Toys for Dogs and Cats',
     description:
-      'Keep your dog engaged, active, and happy with the ZenPaaw 3-in-1 pet toy. Premium BPA-free rubber, dental cleaning nubs, and heavy-duty rope.',
+      'Chew toys, fetch toys, tug ropes, and puzzle feeders for dogs and cats. Every order ships with tracking.',
     url: 'https://zenpaaw.com',
     siteName: 'ZenPaaw',
     images: [
       {
-        url: '/images/hero-dog.jpg',
+        url: '/opengraph-image.png',
         width: 1200,
-        height: 900,
-        alt: 'ZenPaaw 3-in-1 Pet Toy with Golden Retriever',
+        height: 630,
+        alt: 'ZenPaaw - Pet Toys for Dogs and Cats',
       },
     ],
     locale: 'en_US',
@@ -48,16 +62,11 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ZenPaaw™ | One Toy. Three Ways to Play.',
-    description: 'Thoughtfully designed pet toys engineered for active dogs.',
-    images: ['/images/hero-dog.jpg'],
-  },
-  icons: {
-    icon: '/favicon.ico',
+    title: 'ZenPaaw | Pet Toys for Dogs and Cats',
+    description: 'Chew toys, fetch toys, tug ropes, and puzzle feeders for dogs and cats.',
+    images: ['/opengraph-image.png'],
   },
 };
-
-import { Suspense } from 'react';
 
 export default function RootLayout({
   children,
@@ -65,7 +74,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${jakarta.variable} font-sans scroll-smooth`}>
+    <html lang="en" className={`${jakarta.variable} ${outfit.variable} font-sans scroll-smooth`}>
       <head>
         {/* Organization Structured Data Schema */}
         <script
@@ -76,16 +85,17 @@ export default function RootLayout({
               '@type': 'OnlineStore',
               name: 'ZenPaaw',
               url: 'https://zenpaaw.com',
-              logo: 'https://zenpaaw.com/images/packaging-concepts.png',
-              description: 'Independent modern pet lifestyle and toy brand focused on multi-functional play.',
+              logo: 'https://zenpaaw.com/brand/zenpaaw-lockup-stacked.svg',
+              description: 'Durable, enriching toys for dogs and cats. Transparent materials and honest play.',
               priceRange: '$$',
-              paymentAccepted: 'Credit Card, Apple Pay, Google Pay',
+              paymentAccepted: 'Credit Card, PayPal, Paystack',
               currenciesAccepted: 'USD',
             }),
           }}
         />
       </head>
       <body className="min-h-screen bg-[#FAFBF9] text-[#162624] flex flex-col antialiased selection:bg-[#FFC800] selection:text-[#162624]">
+        <LogoIntro />
         <CartProvider>
           <Suspense fallback={<div className="h-16 bg-white border-b border-gray-100" />}>
             <Header />

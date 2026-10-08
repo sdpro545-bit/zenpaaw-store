@@ -1,66 +1,93 @@
 @import "tailwindcss";
 
 :root {
-  --brand-teal-deep: #093b37;
-  --brand-teal: #0c534e;
-  --brand-teal-light: #14726b;
-  --brand-teal-surface: #f0f7f6;
-  --brand-yellow: #ffc800;
-  --brand-yellow-hover: #e5b400;
-  --brand-yellow-soft: #fff6d6;
-  --brand-bg: #fafbf9;
-  --brand-dark: #162624;
-  --brand-gray: #596a68;
-  --brand-border: #e2ebea;
+  --teal-950: #093b37;
+  --teal-700: #0c534e; /* brand primary */
+  --teal-500: #14726b;
+  --mint-100: #f0f7f6;
+  --mint-300: #a3d2cd;
+  --yellow-500: #ffc800;
+  --yellow-600: #e5b400;
+  --yellow-100: #fff6d6;
+  --ink: #162624;
+  --gray-600: #596a68;
+  --line: #e2ebea;
+  --bg: #fafbf9;
+  --blob-dark: #0c4f48;
+
+  /* Semantic aliases */
+  --brand-teal-deep: var(--teal-950);
+  --brand-teal: var(--teal-700);
+  --brand-teal-light: var(--teal-500);
+  --brand-teal-surface: var(--mint-100);
+  --brand-yellow: var(--yellow-500);
+  --brand-yellow-hover: var(--yellow-600);
+  --brand-yellow-soft: var(--yellow-100);
+  --brand-dark: var(--ink);
+  --brand-gray: var(--gray-600);
+  --brand-border: var(--line);
+  --brand-bg: var(--bg);
 }
 
 @theme {
-  --color-teal-deep: var(--brand-teal-deep);
-  --color-teal-brand: var(--brand-teal);
-  --color-teal-light: var(--brand-teal-light);
-  --color-teal-surface: var(--brand-teal-surface);
-  --color-yellow-brand: var(--brand-yellow);
-  --color-yellow-hover: var(--brand-yellow-hover);
-  --color-yellow-soft: var(--brand-yellow-soft);
-  --color-brand-bg: var(--brand-bg);
-  --color-brand-dark: var(--brand-dark);
+  --color-teal-950: var(--teal-950);
+  --color-teal-700: var(--teal-700);
+  --color-teal-500: var(--teal-500);
+  --color-mint-100: var(--mint-100);
+  --color-mint-300: var(--mint-300);
+  --color-yellow-500: var(--yellow-500);
+  --color-yellow-600: var(--yellow-600);
+  --color-yellow-100: var(--yellow-100);
+  --color-ink: var(--ink);
+  --color-gray-600: var(--gray-600);
+  --color-line: var(--line);
+  --color-bg: var(--bg);
+  --color-blob-dark: var(--blob-dark);
+
+  --color-teal-deep: var(--teal-950);
+  --color-teal-brand: var(--teal-700);
+  --color-teal-light: var(--teal-500);
+  --color-teal-surface: var(--mint-100);
+  --color-yellow-brand: var(--yellow-500);
+  --color-yellow-hover: var(--yellow-600);
+  --color-yellow-soft: var(--yellow-100);
+  --color-brand-bg: var(--bg);
+  --color-brand-dark: var(--ink);
+
   --font-sans: var(--font-sans), system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-display), var(--font-sans), system-ui, sans-serif;
 }
 
 body {
-  background-color: var(--brand-bg);
-  color: var(--brand-dark);
+  background-color: var(--bg);
+  color: var(--ink);
   font-family: var(--font-sans);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Tabular numerals for price & inventory counters */
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+}
+
+/* Tabular numerals for price & counters */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
 
-/* Smooth organic blob shapes inspired by reference */
+/* Radius Scale per Section 4.3: 12, 20, 28, 40, pill */
+.rounded-token-sm { border-radius: 12px; }
+.rounded-token-md { border-radius: 20px; }
+.rounded-token-card { border-radius: 28px; }
+.rounded-token-lg { border-radius: 40px; }
+
+/* Organic blob shapes matching reference artwork */
 .organic-shape-yellow {
   border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
 }
 
 .organic-shape-teal {
   border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-}
-
-/* Subtle micro-animations */
-@keyframes floatSlow {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-8px) rotate(1deg);
-  }
-}
-
-.animate-float {
-  animation: floatSlow 6s ease-in-out infinite;
 }
 
 /* Custom scrollbar */
