@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+:root {
+  --brand-teal-deep: #093b37;
+  --brand-teal: #0c534e;
+  --brand-teal-light: #14726b;
+  --brand-teal-surface: #f0f7f6;
+  --brand-yellow: #ffc800;
+  --brand-yellow-hover: #e5b400;
+  --brand-yellow-soft: #fff6d6;
+  --brand-bg: #fafbf9;
+  --brand-dark: #162624;
+  --brand-gray: #596a68;
+  --brand-border: #e2ebea;
+}
+
+@theme {
+  --color-teal-deep: var(--brand-teal-deep);
+  --color-teal-brand: var(--brand-teal);
+  --color-teal-light: var(--brand-teal-light);
+  --color-teal-surface: var(--brand-teal-surface);
+  --color-yellow-brand: var(--brand-yellow);
+  --color-yellow-hover: var(--brand-yellow-hover);
+  --color-yellow-soft: var(--brand-yellow-soft);
+  --color-brand-bg: var(--brand-bg);
+  --color-brand-dark: var(--brand-dark);
+  --font-sans: var(--font-sans), system-ui, -apple-system, sans-serif;
+}
+
+body {
+  background-color: var(--brand-bg);
+  color: var(--brand-dark);
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tabular numerals for price & inventory counters */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Smooth organic blob shapes inspired by reference */
+.organic-shape-yellow {
+  border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+}
+
+.organic-shape-teal {
+  border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+}
+
+/* Subtle micro-animations */
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+}
+
+.animate-float {
+  animation: floatSlow 6s ease-in-out infinite;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f4;
+}
+::-webkit-scrollbar-thumb {
+  background: #a3d2cd;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #0c534e;
+}
