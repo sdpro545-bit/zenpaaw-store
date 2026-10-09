@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { ZenPaawLogo } from './ZenPaawLogo';
 import { useCart } from '@/context/CartContext';
 import { SearchModal } from './SearchModal';
@@ -100,22 +100,26 @@ export const Header: React.FC = () => {
           {/* Action Icons */}
           <div className="flex items-center space-x-1 sm:space-x-2">
             {/* Search Button (without ⌘K badge per feedback) */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.92 }}
               onClick={() => setIsSearchOpen(true)}
-              className="p-2.5 rounded-full hover:bg-[#F0F7F6] text-[#0C534E] transition active:scale-95"
+              className="p-2.5 rounded-full hover:bg-[#F0F7F6] text-[#0C534E] transition active:scale-95 cursor-pointer"
               aria-label="Search pet toys"
             >
               <Search className="w-5 h-5 stroke-[2]" />
-            </button>
+            </motion.button>
 
             {/* Wishlist Button */}
-            <Link
-              href="/wishlist"
-              className="p-2.5 rounded-full hover:bg-[#F0F7F6] text-[#0C534E] transition active:scale-95"
-              aria-label="Wishlist"
-            >
-              <Heart className="w-5 h-5 stroke-[2]" />
-            </Link>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}>
+              <Link
+                href="/wishlist"
+                className="p-2.5 rounded-full hover:bg-[#F0F7F6] text-[#0C534E] transition block"
+                aria-label="Wishlist"
+              >
+                <Heart className="w-5 h-5 stroke-[2]" />
+              </Link>
+            </motion.div>
 
             {/* Shopping Cart Button with open/close and click animations */}
             <motion.button
@@ -160,50 +164,72 @@ export const Header: React.FC = () => {
               )}
             </motion.button>
 
-            {/* Mobile Hamburger Toggle */}
-            <button
+            {/* Mobile/Tablet Hamburger Toggle */}
+            <motion.button
+              whileTap={{ scale: 0.88 }}
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 rounded-xl hover:bg-[#F0F7F6] text-[#0C534E] transition"
+              className="lg:hidden p-2 rounded-xl hover:bg-[#F0F7F6] text-[#0C534E] transition cursor-pointer"
               aria-label="Toggle mobile menu"
             >
-              {isMobileMenuOpen ? (
-                <X className="w-6 h-6 stroke-[2.5]" />
-              ) : (
-                <Menu className="w-6 h-6 stroke-[2.5]" />
-              )}
-            </button>
+              <motion.div
+                key={isMobileMenuOpen ? 'close' : 'open'}
+                initial={{ rotate: -90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                transition={{ duration: 0.2 }}
+              >
+                {isMobileMenuOpen ? (
+                  <X className="w-6 h-6 stroke-[2.5]" />
+                ) : (
+                  <Menu className="w-6 h-6 stroke-[2.5]" />
+                )}
+              </motion.div>
+            </motion.button>
           </div>
         </div>
 
-        {/* Mobile Animated Dropdown Menu */}
-        {isMobileMenuOpen && (
-          <div className="lg:hidden bg-white border-b border-[#E2EBEA] px-6 py-6 space-y-4 shadow-xl">
-            <div className="flex flex-col space-y-2">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center justify-between py-2.5 px-3 rounded-xl text-base font-extrabold transition ${
-                    pathname === link.href
-                      ? 'bg-[#E2EBEA] text-[#093B37]'
-                      : 'text-[#0C534E] hover:bg-[#F0F7F6]'
-                  }`}
-                >
-                  <span>{link.name}</span>
-                  <ChevronRight className="w-4 h-4 text-[#0C534E]" />
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Mobile Animated Dropdown Menu with Spring Accordion */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+              className="lg:hidden overflow-hidden bg-white/98 backdrop-blur-md border-b border-[#E2EBEA] shadow-xl"
+            >
+              <div className="px-5 py-5 space-y-2">
+                {navLinks.map((link, idx) => (
+                  <motion.div
+                    key={link.name}
+                    initial={{ opacity: 0, x: -16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.035 }}
+                  >
+                    <Link
+                      href={link.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={`flex items-center justify-between py-3 px-4 rounded-2xl text-base font-extrabold transition-all active:scale-[0.98] ${
+                        pathname === link.href
+                          ? 'bg-[#E2EBEA] text-[#093B37]'
+                          : 'text-[#0C534E] hover:bg-[#F0F7F6]'
+                      }`}
+                    >
+                      <span>{link.name}</span>
+                      <ChevronRight className="w-4 h-4 text-[#0C534E]" />
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       {/* Mobile Bottom Tab Bar (Section 9.1 & 10) */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/98 backdrop-blur-md border-t border-[#E2EBEA] px-4 py-2 flex items-center justify-around shadow-2xl">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/98 backdrop-blur-md border-t border-[#E2EBEA] px-4 py-2.5 flex items-center justify-around shadow-2xl">
         <Link
           href="/"
-          className={`flex flex-col items-center gap-0.5 text-[0.65rem] font-bold ${
+          className={`flex flex-col items-center gap-0.5 text-[0.65rem] font-bold active:scale-90 transition-transform ${
             pathname === '/' ? 'text-[#0C534E]' : 'text-gray-500'
           }`}
         >
@@ -212,7 +238,7 @@ export const Header: React.FC = () => {
         </Link>
         <Link
           href="/shop"
-          className={`flex flex-col items-center gap-0.5 text-[0.65rem] font-bold ${
+          className={`flex flex-col items-center gap-0.5 text-[0.65rem] font-bold active:scale-90 transition-transform ${
             pathname.startsWith('/shop') || pathname.startsWith('/c')
               ? 'text-[#0C534E]'
               : 'text-gray-500'
@@ -223,14 +249,14 @@ export const Header: React.FC = () => {
         </Link>
         <button
           onClick={() => setIsSearchOpen(true)}
-          className="flex flex-col items-center gap-0.5 text-[0.65rem] font-bold text-gray-500"
+          className="flex flex-col items-center gap-0.5 text-[0.65rem] font-bold text-gray-500 active:scale-90 transition-transform cursor-pointer"
         >
           <Search className="w-5 h-5" />
           <span>Search</span>
         </button>
         <Link
           href="/wishlist"
-          className={`flex flex-col items-center gap-0.5 text-[0.65rem] font-bold ${
+          className={`flex flex-col items-center gap-0.5 text-[0.65rem] font-bold active:scale-90 transition-transform ${
             pathname === '/wishlist' ? 'text-[#0C534E]' : 'text-gray-500'
           }`}
         >
@@ -239,7 +265,7 @@ export const Header: React.FC = () => {
         </Link>
         <button
           onClick={() => setIsCartOpen(true)}
-          className="flex flex-col items-center gap-0.5 text-[0.65rem] font-bold text-[#0C534E] relative"
+          className="flex flex-col items-center gap-0.5 text-[0.65rem] font-bold text-[#0C534E] relative active:scale-90 transition-transform cursor-pointer"
         >
           <ShoppingBag className="w-5 h-5" />
           <span>Cart</span>

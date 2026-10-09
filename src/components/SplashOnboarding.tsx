@@ -65,7 +65,7 @@ export function SplashOnboarding() {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, scale: 1.02 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="fixed inset-0 z-[9999] bg-[#0C534E] text-white flex flex-col items-center justify-center p-6 select-none overflow-hidden"
+          className="fixed inset-0 z-[9999] bg-[#0C534E] text-white flex flex-col items-center justify-center p-4 sm:p-6 select-none overflow-y-auto"
           role="dialog"
           aria-label="ZenPaaw onboarding intro"
         >
@@ -129,7 +129,7 @@ export function SplashOnboarding() {
                     damping: 22,
                     delay: 0.28 + index * 0.07,
                   }}
-                  className="font-black text-4xl sm:text-6xl tracking-tight text-white drop-shadow-md"
+                  className="font-black text-3xl sm:text-5xl md:text-6xl tracking-tight text-white drop-shadow-md"
                 >
                   {char}
                 </motion.span>
@@ -157,22 +157,22 @@ export function SplashOnboarding() {
                   exit={{ opacity: 0, y: -20 }}
                   className="space-y-4 pt-1 w-full"
                 >
-                  <p className="text-sm sm:text-base text-[#D3E8E6] font-medium leading-relaxed">
+                  <p className="text-xs sm:text-sm md:text-base text-[#D3E8E6] font-medium leading-relaxed max-w-sm mx-auto">
                     Durability-tested chew toys, fetch balls, and interactive puzzle feeders for dogs and cats.
                   </p>
 
-                  <div className="grid grid-cols-3 gap-2.5 text-[0.68rem] font-bold text-[#A3D2CD] pt-2">
-                    <div className="p-3 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center gap-1.5 backdrop-blur-sm">
-                      <Truck className="w-4 h-4 text-[#FFC800]" />
-                      <span>Free Shipping $35+</span>
+                  <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5 text-[0.62rem] sm:text-xs font-bold text-[#A3D2CD] pt-2">
+                    <div className="p-2 sm:p-3 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center text-center gap-1 backdrop-blur-sm">
+                      <Truck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FFC800]" />
+                      <span className="leading-tight">Free Shipping $35+</span>
                     </div>
-                    <div className="p-3 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center gap-1.5 backdrop-blur-sm">
-                      <RotateCcw className="w-4 h-4 text-[#FFC800]" />
-                      <span>30-Day Returns</span>
+                    <div className="p-2 sm:p-3 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center text-center gap-1 backdrop-blur-sm">
+                      <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FFC800]" />
+                      <span className="leading-tight">30-Day Returns</span>
                     </div>
-                    <div className="p-3 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center gap-1.5 backdrop-blur-sm">
-                      <ShieldCheck className="w-4 h-4 text-[#FFC800]" />
-                      <span>Tracked Delivery</span>
+                    <div className="p-2 sm:p-3 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center text-center gap-1 backdrop-blur-sm">
+                      <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FFC800]" />
+                      <span className="leading-tight">Tracked Delivery</span>
                     </div>
                   </div>
                 </motion.div>

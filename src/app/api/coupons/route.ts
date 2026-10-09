@@ -34,7 +34,8 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { code, subtotalCents } = await req.json();
+    const body = await req.json();
+    const code = body.code?.trim().toUpperCase();
     if (!code) {
       return NextResponse.json({ valid: false, message: 'Coupon code required' }, { status: 400 });
     }
@@ -44,7 +45,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ valid: false, message: 'Coupon code not found' });
     }
 
-    const subtotal = subtotalCents || 0;
+    const subtotal = body.subtotalCents !== undefined
+      ? body.subtotalCents
+      : Math.round((Number(body.subtotal) || 0) * 100);
     if (subtotal < coupon.minSubtotalCents) {
       const minDollars = (coupon.minSubtotalCents / 100).toFixed(2);
       return NextResponse.json({

@@ -4,16 +4,42 @@ import fs from 'node:fs';
 import { storeConfig } from '@/store.config';
 
 // Unified Database Layer for ZenPaaw Store
-// Supports local file-persisted relational SQLite store (zero-config, survives restarts)
-// and Postgres Drizzle ORM schema mapping.
+// Supports local file-persisted relational SQLite store (zero-config, survives restarts),
+// Vercel serverless /tmp persistence with in-memory fallback, and auto-seeding.
 
-const DB_PATH = path.resolve(process.cwd(), '.zenpaaw.sqlite');
+function getDbPath(): string {
+  const isServerless = Boolean(
+    process.env.VERCEL ||
+    process.env.AWS_LAMBDA_FUNCTION_NAME ||
+    process.env.NETLIFY ||
+    process.env.NODE_ENV === 'production' && !process.env.LOCAL_DEV
+  );
+  if (isServerless) {
+    return path.join('/tmp', '.zenpaaw.sqlite');
+  }
+  try {
+    const testFile = path.resolve(process.cwd(), '.write_test');
+    fs.writeFileSync(testFile, '1');
+    fs.unlinkSync(testFile);
+    return path.resolve(process.cwd(), '.zenpaaw.sqlite');
+  } catch {
+    return path.join('/tmp', '.zenpaaw.sqlite');
+  }
+}
+
 let sqliteDb: DatabaseSync | null = null;
 
 function getSqlite(): DatabaseSync {
   if (!sqliteDb) {
-    sqliteDb = new DatabaseSync(DB_PATH);
+    try {
+      const dbPath = getDbPath();
+      sqliteDb = new DatabaseSync(dbPath);
+    } catch (err) {
+      console.warn('SQLite filesystem init failed, falling back to memory:', err);
+      sqliteDb = new DatabaseSync(':memory:');
+    }
     initSqliteSchema(sqliteDb);
+    seedIfEmpty(sqliteDb);
   }
   return sqliteDb;
 }
@@ -214,6 +240,144 @@ function initSqliteSchema(db: DatabaseSync) {
 
     INSERT OR IGNORE INTO order_sequence (id, next_number) VALUES (1, 100001);
   `);
+}
+
+function seedIfEmpty(db: DatabaseSync) {
+  try {
+    const row = db.prepare('SELECT COUNT(*) as count FROM products').get() as any;
+    if (row && row.count > 0) return;
+  } catch {
+    // Continue to seed
+  }
+
+  try {
+    // 1. Categories
+    const categories = [
+      { id: 'dog-chew', slug: 'chew-toys', name: 'Chew Toys', desc: 'Durable rubber, nylon, and natural composite chew toys for dogs.', pos: 1 },
+      { id: 'dog-fetch', slug: 'fetch-and-outdoor', name: 'Fetch and Outdoor', desc: 'Balls, flyers, launchers, and retrieve toys for outdoor play.', pos: 2 },
+      { id: 'dog-tug', slug: 'tug-and-rope', name: 'Tug and Rope', desc: 'Braided cotton, jute, and natural fiber tug ropes for interactive play.', pos: 3 },
+      { id: 'dog-plush', slug: 'plush-and-squeaky', name: 'Plush and Squeaky', desc: 'Reinforced plush toys with squeakers and crinkle paper.', pos: 4 },
+      { id: 'dog-puzzle', slug: 'puzzle-and-treat', name: 'Puzzle and Treat Toys', desc: 'Interactive treat dispensers, snuffle mats, and lick mats.', pos: 5 },
+      { id: 'dog-water', slug: 'water-and-floating', name: 'Water and Floating Toys', desc: 'Buoyant toys designed for pool, lake, and beach retrieval.', pos: 6 },
+      { id: 'dog-interactive', slug: 'interactive-and-electronic', name: 'Interactive and Electronic', desc: 'Motion-activated and automated interactive play toys.', pos: 7 },
+      { id: 'puppy-teething', slug: 'puppy-teething', name: 'Teething Toys', desc: 'Soft rubber and textured toys designed for young puppy gums.', pos: 8 },
+      { id: 'puppy-starter', slug: 'puppy-starter', name: 'Soft Starter Toys', desc: 'Gentle plush and lightweight starter toys for young dogs.', pos: 9 },
+      { id: 'puppy-sets', slug: 'puppy-sets', name: 'Puppy Starter Sets', desc: 'Multi-piece toy assortments for new puppy households.', pos: 10 },
+      { id: 'cat-wands', slug: 'wands-and-teasers', name: 'Wands and Teasers', desc: 'Feather wands, ribbon teasers, and flexible chasers for cats.', pos: 11 },
+      { id: 'cat-kickers', slug: 'kickers-and-catnip', name: 'Kickers and Catnip', desc: 'Catnip-filled kick sticks and textured pillows for hind-paw play.', pos: 12 },
+      { id: 'cat-tracks', slug: 'balls-and-tracks', name: 'Balls and Tracks', desc: 'Tiered ball tracks, rolling chases, and felt wool play balls.', pos: 13 },
+      { id: 'cat-electronic', slug: 'cat-electronic', name: 'Electronic and Motion Toys', desc: 'Automated laser tumblers, flutter toys, and robotic rolling balls.', pos: 14 },
+      { id: 'cat-tunnels', slug: 'tunnels-and-hideouts', name: 'Tunnels and Hideouts', desc: 'Collapsible crinkle play chutes and pop-up cube tunnels.', pos: 15 },
+      { id: 'cat-scratchers', slug: 'cat-scratchers', name: 'Scratchers', desc: 'Corrugated cardboard lounges and sisal scratching posts.', pos: 16 },
+      { id: 'cat-plush', slug: 'plush-mice-small-toys', name: 'Plush Mice and Small Toys', desc: 'Rattling felt mice, crinkle balls, and lightweight chase toys.', pos: 17 },
+      { id: 'bundles', slug: 'bundles', name: 'Multi-Item Bundles', desc: 'Multi-product value bundles pairing complementary play styles.', pos: 18 },
+    ];
+    const catStmt = db.prepare('INSERT OR REPLACE INTO categories (id, slug, name, description, position) VALUES (?, ?, ?, ?, ?)');
+    for (const c of categories) {
+      catStmt.run(c.id, c.slug, c.name, c.desc, c.pos);
+    }
+
+    // 2. Coupons
+    const coupons = [
+      { id: 'c-welcome10', code: 'WELCOME10', type: 'percentage', val: 10, minSub: 2000, freeShip: 0 },
+      { id: 'c-freeship', code: 'FREESHIP', type: 'fixed', val: 0, minSub: 0, freeShip: 1 },
+      { id: 'c-save5', code: 'SAVE5', type: 'fixed', val: 500, minSub: 3000, freeShip: 0 },
+    ];
+    const coupStmt = db.prepare('INSERT OR REPLACE INTO coupons (id, code, type, value_cents, min_subtotal_cents, free_shipping, used_count) VALUES (?, ?, ?, ?, ?, ?, 0)');
+    for (const c of coupons) {
+      coupStmt.run(c.id, c.code, c.type, c.val, c.minSub, c.freeShip);
+    }
+
+    // 3. Products
+    const seedJsonPath = path.resolve(process.cwd(), 'data', 'catalog.seed.json');
+    if (fs.existsSync(seedJsonPath)) {
+      const raw = fs.readFileSync(seedJsonPath, 'utf-8');
+      const catalog = JSON.parse(raw);
+
+      const prodStmt = db.prepare(`
+        INSERT OR REPLACE INTO products (
+          id, slug, title, summary, description, pet_types, category_id,
+          play_styles, chew_strength, status, brand_label, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      const varStmt = db.prepare(`
+        INSERT OR REPLACE INTO variants (
+          id, product_id, sku, option1_name, option1_value, option2_name, option2_value,
+          price_cents, cost_cents, compare_at_cents, weight_g, available
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      const imgStmt = db.prepare(`
+        INSERT OR REPLACE INTO product_images (
+          id, product_id, variant_id, url, alt, position, reviewed
+        ) VALUES (?, ?, ?, ?, ?, ?, 1)
+      `);
+      const claimStmt = db.prepare(`
+        INSERT OR REPLACE INTO claims (
+          id, product_id, key, value, source_url, verified
+        ) VALUES (?, ?, ?, ?, ?, ?)
+      `);
+
+      for (const p of catalog.products || []) {
+        prodStmt.run(
+          p.id,
+          p.slug,
+          p.title,
+          p.summary,
+          p.description,
+          JSON.stringify(p.pet_types || []),
+          p.category_id,
+          JSON.stringify(p.play_styles || []),
+          p.chew_strength || 'moderate',
+          p.status || 'active',
+          p.brand_label || '',
+          p.created_at || new Date().toISOString(),
+          p.updated_at || new Date().toISOString()
+        );
+
+        for (const v of p.variants || []) {
+          varStmt.run(
+            v.id,
+            p.id,
+            v.sku,
+            v.option1_name || null,
+            v.option1_value || null,
+            v.option2_name || null,
+            v.option2_value || null,
+            v.price_cents,
+            v.cost_cents || Math.round(v.price_cents * 0.4),
+            v.compare_at_cents || null,
+            v.weight_g || 200,
+            v.available !== false ? 1 : 0
+          );
+        }
+
+        let imgPos = 0;
+        for (const img of p.images || []) {
+          imgStmt.run(
+            img.id || `${p.id}-img-${imgPos}`,
+            p.id,
+            img.variant_id || null,
+            img.url,
+            img.alt || p.title,
+            imgPos++
+          );
+        }
+
+        for (const c of p.claims || []) {
+          claimStmt.run(
+            c.id || `${p.id}-clm-${c.key}`,
+            p.id,
+            c.key,
+            c.value,
+            c.source_url || null,
+            c.verified ? 1 : 0
+          );
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Auto-seed encountered non-fatal error:', err);
+  }
 }
 
 // -------------------------------------------------------------
@@ -520,8 +684,9 @@ export const db = {
         (SELECT url FROM product_images pi WHERE pi.product_id = v.product_id ORDER BY pi.position ASC LIMIT 1) as image_url
       FROM variants v
       JOIN products p ON v.product_id = p.id
-      WHERE v.id = ?
-    `).get(variantId) as any;
+      WHERE v.id = ? OR v.product_id = ?
+      LIMIT 1
+    `).get(variantId, variantId) as any;
 
     if (!v) return null;
     return {

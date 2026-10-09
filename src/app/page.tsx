@@ -86,30 +86,30 @@ export default function HomePage() {
                 <RevealText
                   as="h1"
                   highlightWords={['play', 'Last.']}
-                  className="text-4xl sm:text-6xl font-bold tracking-tight leading-[1.08] text-white"
+                  className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.12] sm:leading-[1.08] text-white"
                 >
                   Durable Pet Toys, Built to play, Made to Last.
                 </RevealText>
               </div>
 
               <RevealBlock delay={0.15}>
-                <p className="text-base sm:text-lg text-[#D3E8E6] max-w-xl mx-auto lg:mx-0 font-medium leading-relaxed">
+                <p className="text-sm sm:text-base lg:text-lg text-[#D3E8E6] max-w-xl mx-auto lg:mx-0 font-medium leading-relaxed">
                   Chew toys, fetch toys, tug ropes, and puzzle feeders for dogs and cats. Every order ships with verified carrier tracking.
                 </p>
               </RevealBlock>
 
               {/* CTAs */}
-              <RevealBlock delay={0.25} className="pt-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+              <RevealBlock delay={0.25} className="pt-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4">
                 <Link
                   href="/c/dogs"
-                  className="w-full sm:w-auto px-8 py-4 rounded-full bg-[#FFC800] text-[#162624] font-black text-sm uppercase tracking-wider hover:bg-[#E5B400] transition shadow-lg shadow-[#FFC800]/20 flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-8 py-3.5 sm:py-4 rounded-full bg-[#FFC800] text-[#162624] font-black text-xs sm:text-sm uppercase tracking-wider hover:bg-[#E5B400] active:scale-95 transition-all shadow-lg shadow-[#FFC800]/20 flex items-center justify-center gap-2"
                 >
                   <span>Shop Dog Toys</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link
                   href="/c/cats"
-                  className="w-full sm:w-auto px-8 py-4 rounded-full bg-white/10 hover:bg-white/20 border border-white/25 text-white font-black text-sm uppercase tracking-wider transition flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-8 py-3.5 sm:py-4 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 border border-white/25 text-white font-black text-xs sm:text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2"
                 >
                   <span>Shop Cat Toys</span>
                   <ArrowRight className="w-4 h-4" />
@@ -117,7 +117,7 @@ export default function HomePage() {
               </RevealBlock>
 
               {/* Three true trust points from store config */}
-              <RevealBlock delay={0.35} className="pt-6 border-t border-white/15 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-bold text-[#A3D2CD]">
+              <RevealBlock delay={0.35} className="pt-6 border-t border-white/15 grid grid-cols-1 sm:grid-cols-3 gap-3.5 text-xs font-bold text-[#A3D2CD]">
                 <div className="flex items-center justify-center lg:justify-start gap-2">
                   <Truck className="w-4 h-4 text-[#FFC800] shrink-0" />
                   <span>Free shipping over ${storeConfig.freeShippingThresholdCents / 100}</span>
@@ -135,7 +135,7 @@ export default function HomePage() {
 
             {/* Right visual composition with organic golden blob and cutout dogs playing with toy */}
             <div className="lg:col-span-5 relative flex justify-center">
-              <div className="relative w-80 sm:w-[28rem] aspect-square flex items-center justify-center">
+              <div className="relative w-72 sm:w-96 md:w-[26rem] lg:w-[28rem] aspect-square flex items-center justify-center">
                 {/* Organic Honey Gold Background Blob (matching reference cutout style) */}
                 <div className="absolute inset-4 rounded-[3.5rem] bg-[#FFC800] transform -rotate-3 scale-95 shadow-2xl opacity-95 transition-transform hover:rotate-0 duration-500" />
                 <div className="absolute inset-8 rounded-full bg-[#E5B400] blur-xl opacity-40 -z-10" />
@@ -153,7 +153,7 @@ export default function HomePage() {
                 </div>
 
                 {/* Floating pill badge */}
-                <div className="absolute -bottom-2 -left-2 z-20 px-4 py-2 rounded-full bg-white text-[#162624] font-black text-xs shadow-xl flex items-center gap-2 border border-gray-100">
+                <div className="absolute -bottom-2 left-2 sm:-left-2 z-20 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white text-[#162624] font-black text-xs shadow-xl flex items-center gap-2 border border-gray-100">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                   <span>100 Unbranded SKUs Active</span>
                 </div>
