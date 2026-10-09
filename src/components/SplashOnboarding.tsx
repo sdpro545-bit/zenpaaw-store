@@ -10,15 +10,17 @@ export function SplashOnboarding() {
 
   useEffect(() => {
     try {
+      const isForced = typeof window !== 'undefined' && (
+        window.location.search.includes('intro') ||
+        window.location.search.includes('splash')
+      );
       const seen = sessionStorage.getItem('zenpaaw_onboarding_viewed');
-      if (!seen) {
+      if (!seen || isForced) {
         setIsVisible(true);
-        // Stage 1: Logo & letters animation (0 to 1.4s)
-        // Stage 2: Onboarding assurances (1.4s to 3.8s)
-        const t1 = setTimeout(() => setStage('onboarding'), 1400);
+        const t1 = setTimeout(() => setStage('onboarding'), 1500);
         const t2 = setTimeout(() => {
           handleDismiss();
-        }, 4000);
+        }, 4500);
 
         return () => {
           clearTimeout(t1);
@@ -28,6 +30,17 @@ export function SplashOnboarding() {
     } catch {
       // Storage unavailable fallback
     }
+  }, []);
+
+  useEffect(() => {
+    const handleReplay = () => {
+      setIsVisible(true);
+      setStage('logo');
+      const t1 = setTimeout(() => setStage('onboarding'), 1500);
+      const t2 = setTimeout(() => handleDismiss(), 4500);
+    };
+    window.addEventListener('replay_zenpaaw_intro', handleReplay);
+    return () => window.removeEventListener('replay_zenpaaw_intro', handleReplay);
   }, []);
 
   const handleDismiss = () => {

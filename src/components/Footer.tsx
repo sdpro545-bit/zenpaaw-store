@@ -204,6 +204,17 @@ export const Footer: React.FC = () => {
             <Link href="/admin" className="hover:text-white hover:underline transition">
               Admin Portal
             </Link>
+            <span>•</span>
+            <button
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(new CustomEvent('replay_zenpaaw_intro'));
+                }
+              }}
+              className="text-[#FFC800] hover:text-white hover:underline transition cursor-pointer font-bold"
+            >
+              Replay Intro
+            </button>
           </div>
 
           <div className="flex items-center gap-2">

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { motion } from 'motion/react';
 import { ZenPaawLogo } from './ZenPaawLogo';
 import { useCart } from '@/context/CartContext';
 import { SearchModal } from './SearchModal';
@@ -19,7 +20,7 @@ import {
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
-  const { itemCount, setIsCartOpen } = useCart();
+  const { itemCount, setIsCartOpen, isCartOpen } = useCart();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -116,25 +117,48 @@ export const Header: React.FC = () => {
               <Heart className="w-5 h-5 stroke-[2]" />
             </Link>
 
-            {/* Shopping Cart Button */}
-            <button
-              onClick={() => setIsCartOpen(true)}
-              className="relative px-3.5 py-2.5 rounded-full bg-[#0C534E] text-[#FFC800] hover:bg-[#093B37] shadow-md shadow-[#0C534E]/20 transition-all hover:scale-[1.03] active:scale-95 flex items-center gap-2 group cursor-pointer"
+            {/* Shopping Cart Button with open/close and click animations */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.92 }}
+              onClick={() => setIsCartOpen(!isCartOpen)}
+              className={`relative px-3.5 py-2.5 rounded-full transition-all duration-200 flex items-center gap-2 group cursor-pointer ${
+                isCartOpen
+                  ? 'bg-[#093B37] text-white shadow-lg ring-2 ring-[#FFC800]'
+                  : 'bg-[#0C534E] text-[#FFC800] hover:bg-[#093B37] shadow-md shadow-[#0C534E]/20'
+              }`}
               aria-label={`Cart with ${itemCount} items`}
             >
-              <ShoppingBag className="w-5 h-5 stroke-[2.5] transition-transform group-hover:-rotate-6" />
-              <span className="text-xs font-black tabular-nums text-white pr-0.5">
+              <motion.div
+                animate={isCartOpen ? { rotate: [0, -15, 15, -8, 0], scale: 1.1 } : { rotate: 0, scale: 1 }}
+                transition={{ duration: 0.35, ease: 'easeInOut' }}
+              >
+                <ShoppingBag className="w-5 h-5 stroke-[2.5]" />
+              </motion.div>
+              <motion.span
+                key={itemCount}
+                initial={{ scale: 0.6 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 450, damping: 15 }}
+                className="text-xs font-black tabular-nums text-white pr-0.5"
+              >
                 {itemCount}
-              </span>
+              </motion.span>
               {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                <motion.span
+                  key={`badge-${itemCount}`}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+                  className="absolute -top-1 -right-1 flex h-4 w-4"
+                >
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FFC800] opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-4 w-4 bg-[#FFC800] text-[#093B37] text-[0.62rem] font-black items-center justify-center shadow">
                     {itemCount}
                   </span>
-                </span>
+                </motion.span>
               )}
-            </button>
+            </motion.button>
 
             {/* Mobile Hamburger Toggle */}
             <button

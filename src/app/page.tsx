@@ -86,7 +86,7 @@ export default function HomePage() {
                 <RevealText
                   as="h1"
                   highlightWords={['play', 'Last.']}
-                  className="text-4xl sm:text-6xl font-black tracking-tight leading-[1.08] text-white"
+                  className="text-4xl sm:text-6xl font-bold tracking-tight leading-[1.08] text-white"
                 >
                   Durable Pet Toys, Built to play, Made to Last.
                 </RevealText>
@@ -143,8 +143,8 @@ export default function HomePage() {
                 {/* Cutout Dogs with Toy - No rectangular photo frame, transparent cutout */}
                 <div className="relative w-full h-full z-10 flex items-center justify-center">
                   <Image
-                    src="/images/hero-dogs-cutout.webp"
-                    alt="Two dogs playing tug of war with a durable rope toy"
+                    src="/images/hero-dogs-pet-toy.webp"
+                    alt="Two joyful dogs playing together with a durable rubber chew toy"
                     fill
                     priority
                     sizes="(max-width: 768px) 100vw, 500px"

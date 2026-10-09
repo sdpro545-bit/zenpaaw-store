@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useCart } from '@/context/CartContext';
 import { initialProducts } from '@/data/products';
 import { X, Plus, Minus, Trash2, ArrowRight, ShieldCheck, Truck, Tag, Check } from 'lucide-react';
@@ -64,36 +65,48 @@ export const CartDrawer: React.FC = () => {
     }
   };
 
-  if (!isCartOpen) return null;
-
   const estimatedTotal = Math.max(0, subtotal - discountAmount + (isFreeShipping ? 0 : 4.99));
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-        onClick={() => setIsCartOpen(false)}
-      />
+    <AnimatePresence>
+      {isCartOpen && (
+        <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
+            onClick={() => setIsCartOpen(false)}
+          />
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col">
-          {/* Header */}
-          <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-[#FAFBF9]">
-            <div className="flex items-center gap-2.5">
-              <h2 className="text-lg font-black text-[#162624] tracking-tight">Your Play Cart</h2>
-              <span className="px-2.5 py-0.5 rounded-full bg-[#0C534E] text-[#FFC800] text-xs font-bold">
-                {itemCount} {itemCount === 1 ? 'item' : 'items'}
-              </span>
-            </div>
-            <button
-              onClick={() => setIsCartOpen(false)}
-              className="p-2 rounded-full hover:bg-gray-200 text-gray-500 hover:text-black transition"
-              aria-label="Close cart drawer"
+          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+              className="w-screen max-w-md bg-white shadow-2xl flex flex-col h-full"
             >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+              {/* Header */}
+              <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-[#FAFBF9]">
+                <div className="flex items-center gap-2.5">
+                  <h2 className="text-lg font-black text-[#162624] tracking-tight">Your Play Cart</h2>
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#0C534E] text-[#FFC800] text-xs font-bold">
+                    {itemCount} {itemCount === 1 ? 'item' : 'items'}
+                  </span>
+                </div>
+                <motion.button
+                  whileHover={{ rotate: 90, scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setIsCartOpen(false)}
+                  className="p-2 rounded-full hover:bg-gray-200 text-gray-500 hover:text-black transition cursor-pointer"
+                  aria-label="Close cart drawer"
+                >
+                  <X className="w-5 h-5" />
+                </motion.button>
+              </div>
 
           {/* Free Shipping Progress Meter */}
           <div className="px-6 py-3.5 bg-[#F0F7F6] border-b border-[#E2EBEA]">
@@ -137,65 +150,75 @@ export const CartDrawer: React.FC = () => {
                 </button>
               </div>
             ) : (
-              cart.map((item) => (
-                <div key={item.product.id} className="py-4 flex gap-4 items-center">
-                  <div className="w-20 h-20 rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden relative shrink-0">
-                    <Image
-                      src={item.product.images[0]}
-                      alt={item.product.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-1">
-                      <Link
-                        href={`/product/${item.product.slug}`}
-                        onClick={() => setIsCartOpen(false)}
-                        className="font-bold text-sm text-[#162624] hover:text-[#0C534E] line-clamp-1 transition"
-                      >
-                        {item.product.name}
-                      </Link>
-                      <button
-                        onClick={() => removeFromCart(item.product.id)}
-                        className="text-gray-400 hover:text-red-500 p-1 transition"
-                        title="Remove item"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+              <AnimatePresence initial={false}>
+                {cart.map((item) => (
+                  <motion.div
+                    key={item.product.id}
+                    layout
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="py-4 flex gap-4 items-center"
+                  >
+                    <div className="w-20 h-20 rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden relative shrink-0">
+                      <Image
+                        src={item.product.images[0]}
+                        alt={item.product.name}
+                        fill
+                        className="object-cover"
+                      />
                     </div>
-                    <p className="text-xs text-gray-500 mb-2">{item.product.category}</p>
-                    <div className="flex items-center justify-between">
-                      {/* Quantity Controller */}
-                      <div className="flex items-center border border-gray-200 rounded-full bg-white px-2 py-0.5">
-                        <button
-                          onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                          className="p-1 hover:text-[#0C534E] text-gray-500 transition"
-                          aria-label="Decrease quantity"
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-1">
+                        <Link
+                          href={`/product/${item.product.slug}`}
+                          onClick={() => setIsCartOpen(false)}
+                          className="font-bold text-sm text-[#162624] hover:text-[#0C534E] line-clamp-1 transition"
                         >
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="w-6 text-center text-xs font-bold text-[#162624] tabular-nums">
-                          {item.quantity}
-                        </span>
+                          {item.product.name}
+                        </Link>
                         <button
-                          onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                          className="p-1 hover:text-[#0C534E] text-gray-500 transition"
-                          aria-label="Increase quantity"
+                          onClick={() => removeFromCart(item.product.id)}
+                          className="text-gray-400 hover:text-red-500 p-1 transition"
+                          title="Remove item"
                         >
-                          <Plus className="w-3 h-3" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
+                      <p className="text-xs text-gray-500 mb-2">{item.product.category}</p>
+                      <div className="flex items-center justify-between">
+                        {/* Quantity Controller */}
+                        <div className="flex items-center border border-gray-200 rounded-full bg-white px-2 py-0.5">
+                          <button
+                            onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                            className="p-1 hover:text-[#0C534E] text-gray-500 transition active:scale-90"
+                            aria-label="Decrease quantity"
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="w-6 text-center text-xs font-bold text-[#162624] tabular-nums">
+                            {item.quantity}
+                          </span>
+                          <button
+                            onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                            className="p-1 hover:text-[#0C534E] text-gray-500 transition active:scale-90"
+                            aria-label="Increase quantity"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
 
-                      <div className="text-right">
-                        <span className="text-sm font-extrabold text-[#0C534E] tabular-nums">
-                          ${(item.product.price * item.quantity).toFixed(2)}
-                        </span>
+                        <div className="text-right">
+                          <span className="text-sm font-extrabold text-[#0C534E] tabular-nums">
+                            ${(item.product.price * item.quantity).toFixed(2)}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              ))
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             )}
 
             {/* Cross-Sell Recommendation: Complete the Playtime */}
@@ -309,8 +332,10 @@ export const CartDrawer: React.FC = () => {
               </div>
             </div>
           )}
+            </motion.div>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </AnimatePresence>
   );
 };
