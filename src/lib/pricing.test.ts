@@ -7,7 +7,7 @@ describe('Server-Side Pricing & Cart Calculation Engine', () => {
     // Seed test product and variants if not already in DB
     const existing = db.getProductById('test-product-chew-ball');
     if (!existing) {
-      const s = (db as any).getSqlite ? (db as any).getSqlite() : null;
+      const s = db.getSqlite ? db.getSqlite() : null;
       if (s) {
         const now = new Date().toISOString();
         s.prepare(`

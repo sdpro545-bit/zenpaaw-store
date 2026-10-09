@@ -1,5 +1,4 @@
 import { SignJWT, jwtVerify } from 'jose';
-import { cookies } from 'next/headers';
 import crypto from 'node:crypto';
 import { env } from '@/env';
 

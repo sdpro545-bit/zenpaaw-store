@@ -41,15 +41,6 @@ export default function AdminPage() {
   const [announcementInput, setAnnouncementInput] = useState('');
   const [cmsSaveSuccess, setCmsSaveSuccess] = useState('');
 
-  // Check existing session
-  useEffect(() => {
-    const token = localStorage.getItem('zenpaaw_admin_token');
-    if (token) {
-      setIsAuthenticated(true);
-      fetchData();
-    }
-  }, []);
-
   const fetchData = async () => {
     try {
       const [ordersRes, prodsRes, couponsRes, contentRes] = await Promise.all([
@@ -70,6 +61,15 @@ export default function AdminPage() {
       console.error(e);
     }
   };
+
+  // Check existing session
+  useEffect(() => {
+    const token = localStorage.getItem('zenpaaw_admin_token');
+    if (token) {
+      setIsAuthenticated(true);
+      fetchData();
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

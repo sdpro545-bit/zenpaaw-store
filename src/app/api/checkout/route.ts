@@ -69,7 +69,7 @@ export async function POST(req: Request) {
     // In production with Stripe keys configured: creates Stripe PaymentIntent
     // In test/dev mode without keys: generates secure simulation secret clearly marked for test verification
     let clientSecret: string | null = null;
-    let paymentUrl: string | null = null;
+    const paymentUrl: string | null = null;
 
     if (paymentProvider === 'stripe' && env.STRIPE_SECRET_KEY && !env.STRIPE_SECRET_KEY.includes('placeholder')) {
       // Real Stripe PaymentIntent integration

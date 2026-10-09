@@ -2,9 +2,15 @@ export interface Product {
   id: string;
   slug: string;
   name: string;
+  title?: string;
   tagline: string;
-  category: 'Dog Toys' | 'Cat Toys' | 'Interactive Toys' | 'Chew Toys' | 'Fetch & Outdoor' | 'Best Sellers';
+  category: string;
+  categoryId?: string;
+  petTypes?: string[];
+  playStyles?: string[];
+  chewStrength?: string;
   price: number;
+  priceCents?: number;
   compareAtPrice?: number;
   rating: number;
   reviewCount: number;
@@ -14,6 +20,7 @@ export interface Product {
   isBestSeller?: boolean;
   images: string[];
   description: string;
+  summary?: string;
   features: string[];
   specs: {
     materials: string;
@@ -23,12 +30,15 @@ export interface Product {
     cleaning: string;
   };
   playModes?: {
-    play: string;
-    chew: string;
-    fetch: string;
+    play?: string;
+    chew?: string;
+    fetch?: string;
   };
   includedItems: string[];
   safetyGuidance: string;
+  variants?: unknown[];
+  claims?: unknown[];
+  supplier?: unknown;
 }
 
 export interface CartItem {
