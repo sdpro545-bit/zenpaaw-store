@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
-import { Trash2, Plus, Minus, ArrowRight, ShieldCheck, Tag, Check, Sparkles } from 'lucide-react';
+import { Trash2, Plus, Minus, ArrowRight, ShieldCheck, Tag, Check, Truck } from 'lucide-react';
 
 export default function CartPage() {
   const {
@@ -89,7 +89,7 @@ export default function CartPage() {
         <div className="p-4 rounded-2xl bg-[#F0F7F6] border border-[#E2EBEA]">
           <div className="flex items-center justify-between text-xs font-bold mb-2">
             <span className="text-[#0C534E] flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-[#FFC800]" />
+              <Truck className="w-4 h-4 text-[#0C534E]" />
               {isFreeShipping ? (
                 <span>Unlocked Free Standard Shipping.</span>
               ) : (

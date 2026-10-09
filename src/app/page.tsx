@@ -6,7 +6,6 @@ import {
   ShieldCheck,
   Truck,
   RotateCcw,
-  Sparkles,
   Bone,
   Flame,
   Activity,
@@ -79,17 +78,17 @@ export default function HomePage() {
             {/* Left text column */}
             <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[#FFC800] text-xs font-black uppercase tracking-widest shadow-sm">
-                <Sparkles className="w-3.5 h-3.5 fill-[#FFC800]" />
+                <span className="w-2 h-2 rounded-full bg-[#FFC800]" />
                 <span>Pet Toys for Dogs and Cats</span>
               </div>
 
               <div className="space-y-2">
                 <RevealText
                   as="h1"
-                  highlightWords={['Play.', 'Last.']}
+                  highlightWords={['play', 'Last.']}
                   className="text-4xl sm:text-6xl font-black tracking-tight leading-[1.08] text-white"
                 >
-                  Durable Pet Toys. Built to Play. Made to Last.
+                  Durable Pet Toys, Built to play, Made to Last.
                 </RevealText>
               </div>
 
@@ -134,23 +133,27 @@ export default function HomePage() {
               </RevealBlock>
             </div>
 
-            {/* Right visual composition with organic blob and products */}
+            {/* Right visual composition with organic golden blob and cutout dogs playing with toy */}
             <div className="lg:col-span-5 relative flex justify-center">
-              <div className="relative w-72 sm:w-96 aspect-square rounded-[3rem] bg-[#FFC800]/90 p-6 flex items-center justify-center shadow-2xl">
-                <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden bg-white/20 border-2 border-white/40 flex items-center justify-center">
-                  {staffPicks[0]?.images[0] ? (
-                    <Image
-                      src={staffPicks[0].images[0].url}
-                      alt={staffPicks[0].title}
-                      fill
-                      priority
-                      className="object-contain p-4 drop-shadow-2xl"
-                    />
-                  ) : null}
+              <div className="relative w-80 sm:w-[28rem] aspect-square flex items-center justify-center">
+                {/* Organic Honey Gold Background Blob (matching reference cutout style) */}
+                <div className="absolute inset-4 rounded-[3.5rem] bg-[#FFC800] transform -rotate-3 scale-95 shadow-2xl opacity-95 transition-transform hover:rotate-0 duration-500" />
+                <div className="absolute inset-8 rounded-full bg-[#E5B400] blur-xl opacity-40 -z-10" />
+
+                {/* Cutout Dogs with Toy - No rectangular photo frame, transparent cutout */}
+                <div className="relative w-full h-full z-10 flex items-center justify-center">
+                  <Image
+                    src="/images/hero-dogs-cutout.webp"
+                    alt="Two dogs playing tug of war with a durable rope toy"
+                    fill
+                    priority
+                    sizes="(max-width: 768px) 100vw, 500px"
+                    className="object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.35)] hover:scale-105 transition-transform duration-500"
+                  />
                 </div>
 
                 {/* Floating pill badge */}
-                <div className="absolute -bottom-4 -left-4 px-5 py-2.5 rounded-full bg-white text-[#162624] font-black text-xs shadow-xl flex items-center gap-2 border border-gray-100">
+                <div className="absolute -bottom-2 -left-2 z-20 px-4 py-2 rounded-full bg-white text-[#162624] font-black text-xs shadow-xl flex items-center gap-2 border border-gray-100">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                   <span>100 Unbranded SKUs Active</span>
                 </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Sparkles, ArrowRight, Heart, Shield, RefreshCw } from 'lucide-react';
+import { ArrowRight, Heart, Shield, RefreshCw } from 'lucide-react';
 
 export default function AboutPage() {
   return (

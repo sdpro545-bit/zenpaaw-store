@@ -1,7 +1,7 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronRight, ShieldCheck, AlertCircle, Sparkles } from 'lucide-react';
+import { ChevronRight, ShieldCheck, AlertCircle } from 'lucide-react';
 import { db } from '@/lib/db';
 import { ProductGallery } from '@/components/ProductGallery';
 import { ProductBuyBox } from '@/components/ProductBuyBox';

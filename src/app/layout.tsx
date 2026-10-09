@@ -6,7 +6,7 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { CartDrawer } from '@/components/CartDrawer';
 import { Suspense } from 'react';
-import { LogoIntro } from '@/components/LogoIntro';
+import { SplashOnboarding } from '@/components/SplashOnboarding';
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -95,7 +95,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-[#FAFBF9] text-[#162624] flex flex-col antialiased selection:bg-[#FFC800] selection:text-[#162624]">
-        <LogoIntro />
+        <SplashOnboarding />
         <CartProvider>
           <Suspense fallback={<div className="h-16 bg-white border-b border-gray-100" />}>
             <Header />

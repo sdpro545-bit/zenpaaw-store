@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { initialProducts } from '@/data/products';
-import { X, Plus, Minus, Trash2, ArrowRight, ShieldCheck, Sparkles, Tag, Check } from 'lucide-react';
+import { X, Plus, Minus, Trash2, ArrowRight, ShieldCheck, Truck, Tag, Check } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -99,7 +99,7 @@ export const CartDrawer: React.FC = () => {
           <div className="px-6 py-3.5 bg-[#F0F7F6] border-b border-[#E2EBEA]">
             <div className="flex items-center justify-between text-xs font-bold mb-1.5">
               <span className="text-[#0C534E] flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-[#FFC800]" />
+                <Truck className="w-3.5 h-3.5 text-[#0C534E]" />
                 {isFreeShipping ? (
                   <span className="text-[#0C534E]">Unlocked Free Standard Shipping.</span>
                 ) : (
@@ -202,7 +202,7 @@ export const CartDrawer: React.FC = () => {
             {crossSellItem && cart.length > 0 && (
               <div className="mt-4 pt-4 border-t border-dashed border-gray-200">
                 <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#0C534E] mb-2.5">
-                  <Sparkles className="w-3.5 h-3.5 text-[#FFC800]" />
+                  <Tag className="w-3.5 h-3.5 text-[#0C534E]" />
                   <span>Complete the Playtime</span>
                 </div>
                 <div className="p-3 rounded-2xl bg-[#F8FAF9] border border-[#E2EBEA] flex items-center gap-3">

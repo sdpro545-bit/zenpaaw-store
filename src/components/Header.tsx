@@ -14,7 +14,6 @@ import {
   Heart,
   Home,
   Grid,
-  Sparkles,
   ChevronRight,
 } from 'lucide-react';
 
@@ -70,7 +69,7 @@ export const Header: React.FC = () => {
           <div className="flex items-center">
             <ZenPaawLogo
               variant="horizontal"
-              size={isScrolled ? 'md' : 'lg'}
+              size={isScrolled ? 'sm' : 'md'}
               showTagline={false}
               theme="dark"
               className="py-1"
@@ -99,22 +98,19 @@ export const Header: React.FC = () => {
 
           {/* Action Icons */}
           <div className="flex items-center space-x-1 sm:space-x-2">
-            {/* Search Button (with Cmd+K badge) */}
+            {/* Search Button (without ⌘K badge per feedback) */}
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="px-3 py-2 rounded-full hover:bg-[#F0F7F6] text-[#0C534E] transition font-bold flex items-center gap-2 text-xs"
+              className="p-2.5 rounded-full hover:bg-[#F0F7F6] text-[#0C534E] transition active:scale-95"
               aria-label="Search pet toys"
             >
-              <Search className="w-4 h-4 stroke-[2.5]" />
-              <span className="hidden sm:inline text-[0.68rem] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-mono">
-                ⌘K
-              </span>
+              <Search className="w-5 h-5 stroke-[2]" />
             </button>
 
             {/* Wishlist Button */}
             <Link
               href="/wishlist"
-              className="p-2.5 rounded-full hover:bg-[#F0F7F6] text-[#0C534E] transition"
+              className="p-2.5 rounded-full hover:bg-[#F0F7F6] text-[#0C534E] transition active:scale-95"
               aria-label="Wishlist"
             >
               <Heart className="w-5 h-5 stroke-[2]" />
@@ -123,10 +119,10 @@ export const Header: React.FC = () => {
             {/* Shopping Cart Button */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative px-3.5 py-2.5 rounded-full bg-[#0C534E] text-[#FFC800] hover:bg-[#093B37] shadow-md shadow-[#0C534E]/20 transition flex items-center gap-2 group"
+              className="relative px-3.5 py-2.5 rounded-full bg-[#0C534E] text-[#FFC800] hover:bg-[#093B37] shadow-md shadow-[#0C534E]/20 transition-all hover:scale-[1.03] active:scale-95 flex items-center gap-2 group cursor-pointer"
               aria-label={`Cart with ${itemCount} items`}
             >
-              <ShoppingBag className="w-5 h-5 stroke-[2.5]" />
+              <ShoppingBag className="w-5 h-5 stroke-[2.5] transition-transform group-hover:-rotate-6" />
               <span className="text-xs font-black tabular-nums text-white pr-0.5">
                 {itemCount}
               </span>

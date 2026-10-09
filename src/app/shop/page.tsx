@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { db } from '@/lib/db';
 import { ProductCard } from '@/components/ProductCard';
 import { RevealText } from '@/components/RevealText';
-import { Sparkles, Filter, X, ChevronRight } from 'lucide-react';
+import { Filter, X, ChevronRight } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -70,7 +70,7 @@ export default async function ShopPage({
         <div className="bg-[#0C534E] text-white rounded-3xl p-8 sm:p-12 relative overflow-hidden shadow-xl">
           <div className="relative z-10 max-w-xl space-y-3">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-[#FFC800] text-xs font-black uppercase tracking-widest">
-              <Sparkles className="w-3.5 h-3.5" />
+              <span className="w-2 h-2 rounded-full bg-[#FFC800]" />
               <span>Full Catalog • {products.length} Products</span>
             </span>
             <RevealText as="h1" className="text-3xl sm:text-5xl font-black tracking-tight text-white">

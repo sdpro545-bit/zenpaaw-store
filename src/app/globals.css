@@ -106,6 +106,19 @@ h1, h2, h3, .font-display {
   background: #0c534e;
 }
 
+/* Button and interactive micro-interactions */
+button,
+.btn,
+a.btn {
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+button:active:not(:disabled),
+.btn:active:not(:disabled),
+a.btn:active {
+  transform: scale(0.96);
+}
+
 /* Remove developer indicators, dev badges, and bottom-corner toast packs */
 nextjs-portal,
 [data-nextjs-dev-tools],

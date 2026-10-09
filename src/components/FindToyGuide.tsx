@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sparkles, ArrowRight, RotateCcw, Check } from 'lucide-react';
+import { ArrowRight, RotateCcw, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export function FindToyGuide() {
@@ -253,8 +253,8 @@ export function FindToyGuide() {
                     onClick={handleFinish}
                     className="px-6 py-3 rounded-full bg-[#FFC800] text-[#162624] text-xs font-black uppercase tracking-wider flex items-center gap-2 hover:bg-[#E5B400] transition shadow-md"
                   >
-                    <Sparkles className="w-4 h-4" />
                     <span>View Recommended Toys</span>
+                    <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>
