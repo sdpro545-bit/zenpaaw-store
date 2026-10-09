@@ -91,7 +91,7 @@ export default function CartPage() {
             <span className="text-[#0C534E] flex items-center gap-1.5">
               <Sparkles className="w-4 h-4 text-[#FFC800]" />
               {isFreeShipping ? (
-                <span>Unlocked Free Standard U.S. Shipping! 🎉</span>
+                <span>Unlocked Free Standard Shipping.</span>
               ) : (
                 <span>
                   Add <strong className="text-[#162624]">${amountNeededForFreeShipping.toFixed(2)}</strong> more to get FREE shipping

@@ -144,7 +144,7 @@ export const Footer: React.FC = () => {
           <div className="md:col-span-4 space-y-4">
             <h4 className="font-black text-sm uppercase tracking-wider text-[#FFC800]">Join the Play Club</h4>
             <p className="text-xs sm:text-sm text-[#D3E8E6] leading-relaxed">
-              Subscribe for launch offers, enrichment tips, and new toy releases. Zero spam, ever.
+              Subscribe for launch offers, enrichment tips, and new toy releases. Unsubscribe anytime.
             </p>
 
             {isSubscribed ? (
@@ -186,7 +186,7 @@ export const Footer: React.FC = () => {
 
         {/* Bottom Legal, Payment Icons & Copyright */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#A3D2CD]">
-          <p>© 2026 ZenPaaw™. All rights reserved. Registered Trademark.</p>
+          <p>© 2026 ZenPaaw™. All rights reserved.</p>
 
           <div className="flex flex-wrap items-center gap-4 text-xs">
             <Link href="/privacy" className="hover:text-white hover:underline transition">

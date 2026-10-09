@@ -47,12 +47,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, priority = fa
           <div className="absolute top-3 left-3 flex flex-col gap-1.5 pointer-events-none">
             {product.isFlagship && (
               <span className="px-3 py-1 rounded-full bg-[#0C534E] text-[#FFC800] text-[0.68rem] font-black tracking-wider uppercase shadow-md">
-                ★ Flagship 3-in-1
+                Staff Pick
               </span>
             )}
             {product.isBestSeller && !product.isFlagship && (
               <span className="px-3 py-1 rounded-full bg-[#FFC800] text-[#162624] text-[0.68rem] font-black tracking-wider uppercase shadow-md">
-                Best Seller
+                Staff Pick
               </span>
             )}
             {discountPercent > 0 && (
@@ -60,14 +60,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, priority = fa
                 Save {discountPercent}%
               </span>
             )}
-          </div>
-
-          {/* Stock Indicator Badge */}
-          <div className="absolute bottom-3 left-3 pointer-events-none">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md text-[0.65rem] font-bold text-[#0C534E] shadow-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              In Stock
-            </span>
           </div>
         </div>
 
@@ -78,11 +70,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, priority = fa
             <span className="font-semibold text-[#0C534E] uppercase tracking-wider text-[0.7rem]">
               {product.category}
             </span>
-            <div className="flex items-center gap-1 font-bold text-[#162624]">
-              <Star className="w-3.5 h-3.5 fill-[#FFC800] text-[#FFC800]" />
-              <span>{product.rating.toFixed(1)}</span>
-              <span className="text-gray-400 font-normal">({product.reviewCount})</span>
-            </div>
+            {(product.reviewCount ?? 0) >= 3 && product.rating !== undefined ? (
+              <div className="flex items-center gap-1 font-bold text-[#162624]">
+                <Star className="w-3.5 h-3.5 fill-[#FFC800] text-[#FFC800]" />
+                <span>{product.rating.toFixed(1)}</span>
+                <span className="text-gray-400 font-normal">({product.reviewCount})</span>
+              </div>
+            ) : null}
           </div>
 
           {/* Product Name */}

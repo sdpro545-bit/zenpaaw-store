@@ -6,8 +6,17 @@ import { usePathname } from 'next/navigation';
 import { ZenPaawLogo } from './ZenPaawLogo';
 import { useCart } from '@/context/CartContext';
 import { SearchModal } from './SearchModal';
-import { initialProducts } from '@/data/products';
-import { Search, ShoppingBag, Menu, X, Shield, ChevronRight } from 'lucide-react';
+import {
+  Search,
+  ShoppingBag,
+  Menu,
+  X,
+  Heart,
+  Home,
+  Grid,
+  Sparkles,
+  ChevronRight,
+} from 'lucide-react';
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
@@ -24,104 +33,107 @@ export const Header: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Keyboard shortcut Cmd/Ctrl + K for search modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const navLinks = [
-    { name: 'Home', href: '/' },
+    { name: 'Dogs', href: '/c/dogs' },
+    { name: 'Puppies', href: '/c/puppies' },
+    { name: 'Cats', href: '/c/cats' },
     { name: 'Shop All', href: '/shop' },
-    { name: '3-in-1 Flagship', href: '/product/zenpaaw-3-in-1-pet-toy' },
+    { name: 'Collections', href: '/collections/staff-picks' },
     { name: 'About', href: '/about' },
     { name: 'FAQ', href: '/faq' },
-    { name: 'Contact', href: '/contact' },
   ];
-
-  // Announcement bar text
-  const announcementText = '🐾 FREE U.S. SHIPPING OVER $35 • 30-DAY MONEY-BACK PLAY GUARANTEE';
 
   return (
     <>
-      {/* Top Announcement Bar */}
-      <div className="bg-[#093B37] text-white text-[0.72rem] font-bold tracking-wider py-2 px-4 text-center border-b border-[#0C534E]/50 select-none flex items-center justify-center gap-2">
-        <span className="inline-block w-2 h-2 rounded-full bg-[#FFC800] animate-pulse" />
-        <span>{announcementText}</span>
-      </div>
-
       {/* Main Sticky Header */}
       <header
         className={`sticky top-0 z-40 w-full transition-all duration-300 ${
           isScrolled
-            ? 'bg-white/95 backdrop-blur-md shadow-md py-3 border-b border-gray-100'
-            : 'bg-white py-4.5 border-b border-gray-100'
+            ? 'bg-white/98 backdrop-blur-md shadow-sm py-2.5 border-b border-[#E2EBEA]'
+            : 'bg-white py-3.5 border-b border-[#E2EBEA]'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           {/* Brand Logo */}
           <div className="flex items-center">
             <ZenPaawLogo
-              size={isScrolled ? 'sm' : 'md'}
-              showTagline={!isScrolled}
+              variant="horizontal"
+              size={isScrolled ? 'md' : 'lg'}
+              showTagline={false}
               theme="dark"
+              className="py-1"
             />
           </div>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center space-x-1 xl:space-x-2">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`px-3.5 py-1.5 rounded-full text-xs lg:text-sm font-bold transition-all relative ${
+                  className={`px-3.5 py-2 rounded-full text-xs xl:text-sm font-extrabold tracking-tight transition-all relative ${
                     isActive
-                      ? 'text-[#0C534E] bg-[#F0F7F6]'
-                      : 'text-[#162624] hover:text-[#0C534E] hover:bg-gray-50'
+                      ? 'text-[#093B37] bg-[#E2EBEA]'
+                      : 'text-[#0C534E] hover:text-[#093B37] hover:bg-[#F0F7F6]'
                   }`}
                 >
                   {link.name}
-                  {link.name === '3-in-1 Flagship' && (
-                    <span className="ml-1.5 px-1.5 py-0.2 rounded-full bg-[#FFC800] text-[#162624] text-[0.62rem] font-black uppercase tracking-wider">
-                      Hot
-                    </span>
-                  )}
                 </Link>
               );
             })}
           </nav>
 
           {/* Action Icons */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            {/* Search Button */}
+          <div className="flex items-center space-x-1 sm:space-x-2">
+            {/* Search Button (with Cmd+K badge) */}
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="p-2.5 rounded-full hover:bg-[#F0F7F6] text-[#162624] hover:text-[#0C534E] transition"
-              aria-label="Search toys"
+              className="px-3 py-2 rounded-full hover:bg-[#F0F7F6] text-[#0C534E] transition font-bold flex items-center gap-2 text-xs"
+              aria-label="Search pet toys"
             >
-              <Search className="w-5 h-5" />
+              <Search className="w-4 h-4 stroke-[2.5]" />
+              <span className="hidden sm:inline text-[0.68rem] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-mono">
+                ⌘K
+              </span>
             </button>
 
-            {/* Admin Portal Quick Link */}
+            {/* Wishlist Button */}
             <Link
-              href="/admin"
-              className="hidden sm:inline-flex p-2.5 rounded-full hover:bg-[#F0F7F6] text-gray-400 hover:text-[#0C534E] transition"
-              title="Admin Dashboard"
-              aria-label="Admin Dashboard"
+              href="/wishlist"
+              className="p-2.5 rounded-full hover:bg-[#F0F7F6] text-[#0C534E] transition"
+              aria-label="Wishlist"
             >
-              <Shield className="w-4 h-4" />
+              <Heart className="w-5 h-5 stroke-[2]" />
             </Link>
 
-            {/* Shopping Cart Button with Dynamic Badge */}
+            {/* Shopping Cart Button */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative p-2.5 rounded-full bg-[#0C534E] text-[#FFC800] hover:bg-[#093B37] shadow-md shadow-[#0C534E]/20 transition flex items-center gap-1.5"
+              className="relative px-3.5 py-2.5 rounded-full bg-[#0C534E] text-[#FFC800] hover:bg-[#093B37] shadow-md shadow-[#0C534E]/20 transition flex items-center gap-2 group"
               aria-label={`Cart with ${itemCount} items`}
             >
-              <ShoppingBag className="w-5 h-5" />
+              <ShoppingBag className="w-5 h-5 stroke-[2.5]" />
               <span className="text-xs font-black tabular-nums text-white pr-0.5">
                 {itemCount}
               </span>
               {itemCount > 0 && (
                 <span className="absolute -top-1 -right-1 flex h-4 w-4">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FFC800] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-4 w-4 bg-[#FFC800] text-[#162624] text-[0.62rem] font-black items-center justify-center">
+                  <span className="relative inline-flex rounded-full h-4 w-4 bg-[#FFC800] text-[#093B37] text-[0.62rem] font-black items-center justify-center shadow">
                     {itemCount}
                   </span>
                 </span>
@@ -131,52 +143,96 @@ export const Header: React.FC = () => {
             {/* Mobile Hamburger Toggle */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-xl hover:bg-gray-100 text-[#162624] transition"
+              className="lg:hidden p-2 rounded-xl hover:bg-[#F0F7F6] text-[#0C534E] transition"
               aria-label="Toggle mobile menu"
             >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMobileMenuOpen ? (
+                <X className="w-6 h-6 stroke-[2.5]" />
+              ) : (
+                <Menu className="w-6 h-6 stroke-[2.5]" />
+              )}
             </button>
           </div>
         </div>
 
         {/* Mobile Animated Dropdown Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-white border-b border-gray-200 px-6 py-6 space-y-4 shadow-xl animate-in slide-in-from-top-2 duration-200">
+          <div className="lg:hidden bg-white border-b border-[#E2EBEA] px-6 py-6 space-y-4 shadow-xl">
             <div className="flex flex-col space-y-2">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center justify-between py-2.5 px-3 rounded-xl text-base font-bold transition ${
+                  className={`flex items-center justify-between py-2.5 px-3 rounded-xl text-base font-extrabold transition ${
                     pathname === link.href
-                      ? 'bg-[#F0F7F6] text-[#0C534E]'
-                      : 'text-[#162624] hover:bg-gray-50'
+                      ? 'bg-[#E2EBEA] text-[#093B37]'
+                      : 'text-[#0C534E] hover:bg-[#F0F7F6]'
                   }`}
                 >
                   <span>{link.name}</span>
-                  <ChevronRight className="w-4 h-4 text-gray-400" />
+                  <ChevronRight className="w-4 h-4 text-[#0C534E]" />
                 </Link>
               ))}
-              <Link
-                href="/admin"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center justify-between py-2.5 px-3 rounded-xl text-sm font-semibold text-gray-500 hover:bg-gray-50 transition border-t border-gray-100 mt-2 pt-3"
-              >
-                <span>Store Management (Admin)</span>
-                <Shield className="w-4 h-4 text-gray-400" />
-              </Link>
             </div>
           </div>
         )}
       </header>
 
+      {/* Mobile Bottom Tab Bar (Section 9.1 & 10) */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/98 backdrop-blur-md border-t border-[#E2EBEA] px-4 py-2 flex items-center justify-around shadow-2xl">
+        <Link
+          href="/"
+          className={`flex flex-col items-center gap-0.5 text-[0.65rem] font-bold ${
+            pathname === '/' ? 'text-[#0C534E]' : 'text-gray-500'
+          }`}
+        >
+          <Home className="w-5 h-5" />
+          <span>Home</span>
+        </Link>
+        <Link
+          href="/shop"
+          className={`flex flex-col items-center gap-0.5 text-[0.65rem] font-bold ${
+            pathname.startsWith('/shop') || pathname.startsWith('/c')
+              ? 'text-[#0C534E]'
+              : 'text-gray-500'
+          }`}
+        >
+          <Grid className="w-5 h-5" />
+          <span>Shop</span>
+        </Link>
+        <button
+          onClick={() => setIsSearchOpen(true)}
+          className="flex flex-col items-center gap-0.5 text-[0.65rem] font-bold text-gray-500"
+        >
+          <Search className="w-5 h-5" />
+          <span>Search</span>
+        </button>
+        <Link
+          href="/wishlist"
+          className={`flex flex-col items-center gap-0.5 text-[0.65rem] font-bold ${
+            pathname === '/wishlist' ? 'text-[#0C534E]' : 'text-gray-500'
+          }`}
+        >
+          <Heart className="w-5 h-5" />
+          <span>Wishlist</span>
+        </Link>
+        <button
+          onClick={() => setIsCartOpen(true)}
+          className="flex flex-col items-center gap-0.5 text-[0.65rem] font-bold text-[#0C534E] relative"
+        >
+          <ShoppingBag className="w-5 h-5" />
+          <span>Cart</span>
+          {itemCount > 0 && (
+            <span className="absolute -top-1 right-1.5 w-4 h-4 rounded-full bg-[#FFC800] text-[#162624] text-[0.6rem] font-black flex items-center justify-center">
+              {itemCount}
+            </span>
+          )}
+        </button>
+      </div>
+
       {/* Global Instant Search Modal */}
-      <SearchModal
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-        products={initialProducts}
-      />
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </>
   );
 };

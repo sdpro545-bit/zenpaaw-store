@@ -12,12 +12,12 @@ export default function FaqPage() {
     {
       category: 'Product & Play',
       q: 'What is the ZenPaaw 3-in-1 Pet Toy?',
-      a: 'The ZenPaaw 3-in-1 Pet Toy is a multi-dimensional enrichment toy that brings together three distinct functions: an textured high-bounce rubber ball for rolling/play, a ribbed cylindrical roller with massaging dental nubs for chewing and teeth cleaning, and a heavy-duty braided rope handle for long fetch launches and outdoor tugging.'
+      a: 'The ZenPaaw 3-in-1 Pet Toy brings together three distinct functions: a textured rubber ball for bouncing, a ribbed cylindrical roller with raised rubber ridges for chewing, and a braided rope handle for long fetch launches and outdoor tugging.'
     },
     {
       category: 'Product & Play',
       q: 'What types of play does the toy support?',
-      a: 'It supports solo exploratory play (nudging and bouncing), satisfying chewing sessions that help scrape plaque from your dog’s teeth, and high-energy interactive fetch games in the backyard or dog park.'
+      a: 'It supports solo exploratory play, satisfying chewing sessions with textured surface ridges, and high-energy interactive fetch games in the yard or park.'
     },
     {
       category: 'Product & Play',

@@ -4,18 +4,17 @@ import React, { useState, useEffect } from 'react';
 import { Search, X, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Product } from '@/types';
 import { trackEvent } from '@/lib/analytics';
 
 interface SearchModalProps {
   isOpen: boolean;
   onClose: () => void;
-  products: Product[];
 }
 
-export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, products }) => {
+export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<Product[]>([]);
+  const [results, setResults] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!query.trim()) {
@@ -23,20 +22,23 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, produ
       return;
     }
 
-    const q = query.toLowerCase();
-    const filtered = products.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.tagline.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q)
-    );
-    setResults(filtered);
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/products?q=${encodeURIComponent(query.trim())}`);
+        const data = await res.json();
+        if (data.products) {
+          setResults(data.products.slice(0, 8));
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }, 200);
 
-    if (query.length > 2) {
-      trackEvent('search', { search_term: query });
-    }
-  }, [query, products]);
+    return () => clearTimeout(timer);
+  }, [query]);
 
   // Handle escape key
   useEffect(() => {
@@ -57,95 +59,129 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, produ
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div 
-        className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Search Input Bar */}
-        <div className="flex items-center px-6 py-4 border-b border-gray-100 gap-3">
-          <Search className="w-5 h-5 text-[#0C534E]" />
+      <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col max-h-[80vh]">
+        {/* Search Header Input */}
+        <div className="p-4 sm:p-5 border-b border-gray-100 flex items-center gap-3">
+          <Search className="w-5 h-5 text-gray-400 shrink-0" />
           <input
             type="text"
-            placeholder="Search pet toys (e.g., 3-in-1, chew, fetch, puzzle)..."
+            placeholder="Search all toys (e.g. rope, bone, catnip, puzzle)..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             autoFocus
-            className="w-full text-base sm:text-lg outline-none text-[#162624] placeholder-gray-400 font-medium"
+            className="w-full text-sm sm:text-base outline-none placeholder-gray-400 text-[#162624] font-medium"
           />
+          {query && (
+            <button
+              onClick={() => setQuery('')}
+              className="p-1 rounded-full text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-gray-100 text-gray-500 hover:text-black transition"
-            aria-label="Close search"
+            className="p-2 rounded-full hover:bg-gray-100 text-gray-500 transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Content Body */}
-        <div className="max-h-[60vh] overflow-y-auto p-6">
-          {query.trim() === '' ? (
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Popular Searches</p>
-              <div className="flex flex-wrap gap-2">
-                {['3-in-1 Pet Toy', 'Chew Toys', 'Dog Toys', 'Dental Care', 'Puzzle Balls', 'Outdoor Fetch'].map((term) => (
-                  <button
-                    key={term}
-                    onClick={() => setQuery(term)}
-                    className="px-3.5 py-1.5 rounded-full bg-[#FAFBF9] border border-gray-200 text-xs font-semibold text-[#162624] hover:border-[#0C534E] hover:bg-[#F0F7F6] transition"
+        {/* Results List */}
+        <div className="overflow-y-auto p-4 flex-1">
+          {loading && (
+            <div className="py-8 text-center text-xs text-gray-400 font-bold">
+              Searching database...
+            </div>
+          )}
+
+          {!loading && query.trim() && results.length === 0 && (
+            <div className="py-12 text-center">
+              <p className="text-sm text-gray-500 font-medium">No pet toys found for &ldquo;{query}&rdquo;</p>
+              <span className="text-xs text-gray-400 mt-1 block">
+                Try searching for generic terms like &ldquo;chew&rdquo;, &ldquo;fetch&rdquo;, or &ldquo;wand&rdquo;.
+              </span>
+            </div>
+          )}
+
+          {!loading && results.length > 0 && (
+            <div className="divide-y divide-gray-100">
+              {results.map((product) => {
+                const minPrice =
+                  product.variants && product.variants.length > 0
+                    ? Math.min(...product.variants.map((v: any) => v.priceCents)) / 100
+                    : 14.99;
+                const thumb = product.images?.[0]?.url || '/brand/zenpaaw-symbol.svg';
+
+                return (
+                  <Link
+                    key={product.id}
+                    href={`/product/${product.slug}`}
+                    onClick={onClose}
+                    className="flex items-center gap-4 py-3 px-2 rounded-2xl hover:bg-[#F0F7F6] transition group"
                   >
-                    {term}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : results.length > 0 ? (
-            <div className="space-y-3">
-              <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
-                Found {results.length} {results.length === 1 ? 'Product' : 'Products'}
-              </p>
-              {results.map((prod) => (
-                <Link
-                  key={prod.id}
-                  href={`/product/${prod.slug}`}
-                  onClick={onClose}
-                  className="flex items-center gap-4 p-3 rounded-2xl hover:bg-[#F3F7F6] border border-transparent hover:border-[#A3D2CD] transition group"
-                >
-                  <div className="w-14 h-14 relative rounded-xl overflow-hidden bg-gray-50 border border-gray-100 shrink-0">
-                    <Image
-                      src={prod.images[0]}
-                      alt={prod.name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-sm sm:text-base text-[#162624] truncate group-hover:text-[#0C534E]">
-                      {prod.name}
-                    </h4>
-                    <p className="text-xs text-gray-500 truncate">{prod.tagline}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="font-extrabold text-sm text-[#0C534E]">${prod.price.toFixed(2)}</span>
-                      {prod.compareAtPrice && (
-                        <span className="text-xs text-gray-400 line-through">
-                          ${prod.compareAtPrice.toFixed(2)}
-                        </span>
-                      )}
+                    <div className="w-14 h-14 rounded-xl bg-gray-50 border border-gray-100 relative overflow-hidden shrink-0">
+                      <Image
+                        src={thumb}
+                        alt={product.title}
+                        fill
+                        className="object-contain p-1"
+                        sizes="56px"
+                      />
                     </div>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-[#0C534E] group-hover:translate-x-1 transition" />
-                </Link>
-              ))}
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[0.65rem] font-black uppercase tracking-wider text-[#0C534E]">
+                        {product.categoryId}
+                      </span>
+                      <h4 className="text-xs sm:text-sm font-extrabold text-[#162624] group-hover:text-[#0C534E] truncate">
+                        {product.title}
+                      </h4>
+                      <p className="text-xs text-gray-500 truncate">{product.summary}</p>
+                    </div>
+                    <span className="text-xs sm:text-sm font-black text-[#0C534E] tabular-nums">
+                      ${minPrice.toFixed(2)}
+                    </span>
+                  </Link>
+                );
+              })}
             </div>
-          ) : (
-            <div className="text-center py-10">
-              <div className="w-12 h-12 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center mx-auto mb-3">
-                <Search className="w-6 h-6" />
+          )}
+
+          {!query && (
+            <div className="py-6 px-2 space-y-4">
+              <span className="text-[0.68rem] font-black uppercase tracking-wider text-gray-400 block">
+                Popular Searches
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {['Chew Bone', 'Cotton Rope Tug', 'Teaser Wand', 'Snuffle Mat', 'Catnip Kicker'].map(
+                  (term) => (
+                    <button
+                      key={term}
+                      onClick={() => setQuery(term)}
+                      className="px-3.5 py-1.5 rounded-full bg-gray-100 hover:bg-[#F0F7F6] hover:text-[#0C534E] text-xs font-bold text-gray-600 transition"
+                    >
+                      {term}
+                    </button>
+                  )
+                )}
               </div>
-              <p className="font-bold text-[#162624]">No toys found for &ldquo;{query}&rdquo;</p>
-              <p className="text-xs text-gray-500 mt-1">Try searching for &quot;chew&quot;, &quot;3-in-1&quot;, or &quot;rope&quot;.</p>
             </div>
           )}
         </div>
+
+        {/* Footer Link to Full Search */}
+        {query && results.length > 0 && (
+          <div className="p-3 bg-[#FAFBF9] border-t border-gray-100 text-center">
+            <Link
+              href={`/search?q=${encodeURIComponent(query)}`}
+              onClick={onClose}
+              className="text-xs font-black text-[#0C534E] hover:underline flex items-center justify-center gap-1.5"
+            >
+              <span>View all results on search page</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -101,7 +101,7 @@ export const CartDrawer: React.FC = () => {
               <span className="text-[#0C534E] flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-[#FFC800]" />
                 {isFreeShipping ? (
-                  <span className="text-[#0C534E]">Unlocked Free Standard U.S. Shipping! 🎉</span>
+                  <span className="text-[#0C534E]">Unlocked Free Standard Shipping.</span>
                 ) : (
                   <span>
                     Add <strong className="text-[#162624]">${amountNeededForFreeShipping.toFixed(2)}</strong> more for FREE shipping
@@ -125,9 +125,9 @@ export const CartDrawer: React.FC = () => {
                 <div className="w-20 h-20 rounded-full bg-[#F0F7F6] text-[#0C534E] flex items-center justify-center mb-4">
                   <Tag className="w-8 h-8 stroke-[1.5]" />
                 </div>
-                <h3 className="text-lg font-extrabold text-[#162624]">Your cart is hungry!</h3>
+                <h3 className="text-lg font-extrabold text-[#162624]">Your cart is empty</h3>
                 <p className="text-sm text-gray-500 max-w-xs mt-1 mb-6">
-                  Add the ZenPaaw 3-in-1 toy and give your furry friend more ways to play today.
+                  Explore our catalog of chew toys, fetch toys, and enrichment puzzles.
                 </p>
                 <button
                   onClick={() => setIsCartOpen(false)}

@@ -5,26 +5,25 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
-import { ShippingAddress } from '@/types';
+import { storeConfig } from '@/store.config';
 import { trackEvent } from '@/lib/analytics';
 import {
-  Lock,
-  ShieldCheck,
   CreditCard,
   Truck,
   ArrowLeft,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Shield,
 } from 'lucide-react';
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart, subtotal, discountAmount, isFreeShipping, appliedCoupon, clearCart } = useCart();
 
-  const shippingCost = isFreeShipping ? 0 : 4.99;
-  const total = Math.max(0, subtotal - discountAmount + shippingCost);
+  const shippingCost = isFreeShipping ? 0 : storeConfig.standardShippingRateCents / 100;
+  const estimatedTotal = Math.max(0, subtotal - discountAmount + shippingCost);
 
-  const [formData, setFormData] = useState<ShippingAddress>({
+  const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
@@ -34,17 +33,10 @@ export default function CheckoutPage() {
     city: '',
     state: 'CA',
     zipCode: '',
-    country: 'United States'
+    country: 'United States',
   });
 
-  const [cardDetails, setCardDetails] = useState({
-    cardNumber: '',
-    expDate: '',
-    cvc: '',
-    nameOnCard: ''
-  });
-
-  const [shippingMethod, setShippingMethod] = useState<'standard' | 'express'>('standard');
+  const [paymentProvider, setPaymentProvider] = useState<'stripe' | 'paystack'>('stripe');
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -52,20 +44,15 @@ export default function CheckoutPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleCardChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCardDetails({ ...cardDetails, [e.target.name]: e.target.value });
-  };
-
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
     if (cart.length === 0) {
-      setErrorMsg('Your cart is empty. Add products to proceed.');
+      setErrorMsg('Your cart is empty. Please add toys to continue.');
       return;
     }
 
-    // Basic address validation
     if (
       !formData.firstName ||
       !formData.lastName ||
@@ -78,80 +65,83 @@ export default function CheckoutPage() {
       return;
     }
 
-    // Basic card validation
-    if (!cardDetails.cardNumber || !cardDetails.expDate || !cardDetails.cvc) {
-      setErrorMsg('Please enter valid credit card details.');
-      return;
-    }
-
     setIsProcessing(true);
 
     try {
-      // Begin checkout event
       trackEvent('begin_checkout', {
-        value: total,
-        items_count: cart.length
+        value: estimatedTotal,
+        items_count: cart.length,
       });
 
-      // Prepare order items
-      const items = cart.map((i) => ({
-        productId: i.product.id,
-        productName: i.product.name,
-        price: i.product.price,
-        quantity: i.quantity,
-        image: i.product.images[0]
-      }));
-
-      // Generate client-side token mock (Stripe Elements architecture)
-      const simulatedToken = `tok_stripe_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-
-      const res = await fetch('/api/checkout', {
+      // 1. Submit order to server endpoint for recalculation from database
+      const checkoutRes = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           customer: formData,
-          items,
-          subtotal,
-          shippingCost,
-          discount: discountAmount,
-          total,
+          items: cart.map((i) => ({
+            variantId: i.selectedVariant || i.product.id,
+            quantity: i.quantity,
+          })),
           couponCode: appliedCoupon?.code,
-          paymentToken: simulatedToken
-        })
+          paymentProvider,
+        }),
       });
 
-      const data = await res.json();
+      const checkoutData = await checkoutRes.json();
 
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to process checkout');
+      if (!checkoutRes.ok) {
+        throw new Error(checkoutData.error || 'Server rejected checkout parameters.');
       }
 
-      // Track confirmed purchase event (only fires on verified server success!)
-      trackEvent('purchase', {
-        transaction_id: data.orderId,
-        value: total,
-        shipping: shippingCost,
-        items
+      const { orderNumber, clientSecret, paymentUrl } = checkoutData;
+
+      if (paymentUrl) {
+        // Hosted checkout redirect (Stripe / Paystack)
+        window.location.href = paymentUrl;
+        return;
+      }
+
+      // Test Mode server payment verification
+      const verifyRes = await fetch('/api/checkout/simulate-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderNumber,
+          clientSecret,
+        }),
       });
 
-      // Clear client cart
-      clearCart();
+      const verifyData = await verifyRes.json();
 
-      // Navigate to order confirmation
-      router.push(`/order-confirmation/${data.orderId}`);
+      if (!verifyRes.ok) {
+        throw new Error(verifyData.error || 'Payment authorization simulation failed.');
+      }
+
+      // Success: clear cart and redirect to verified order confirmation receipt
+      clearCart();
+      trackEvent('purchase', {
+        order_number: orderNumber,
+        value: estimatedTotal,
+      });
+
+      router.push(`/order/${orderNumber}?email=${encodeURIComponent(formData.email)}`);
     } catch (err: any) {
-      setErrorMsg(err.message || 'Payment processing error. Please try again.');
+      setErrorMsg(err.message || 'An unexpected error occurred during checkout.');
       setIsProcessing(false);
     }
   };
 
   if (cart.length === 0) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center">
-        <h2 className="text-xl font-bold text-[#162624]">Your cart is currently empty</h2>
+      <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center space-y-4">
+        <h1 className="text-2xl font-black text-[#162624]">Your Cart is Currently Empty</h1>
+        <p className="text-xs text-gray-500 max-w-sm">
+          Please add products to your cart before proceeding to checkout.
+        </p>
         <Link
           href="/shop"
-          className="mt-4 px-6 py-2.5 rounded-full bg-[#0C534E] text-[#FFC800] text-sm font-bold"
+          className="px-8 py-3.5 rounded-full bg-[#0C534E] text-[#FFC800] text-xs font-black uppercase tracking-wider shadow-md"
         >
           Return to Shop
         </Link>
@@ -161,8 +151,8 @@ export default function CheckoutPage() {
 
   return (
     <div className="bg-[#FAFBF9] min-h-screen py-10 sm:py-16">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-6 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        <div className="flex items-center justify-between">
           <Link
             href="/cart"
             className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-[#0C534E]"
@@ -171,13 +161,13 @@ export default function CheckoutPage() {
             <span>Back to Cart</span>
           </Link>
           <div className="flex items-center gap-1.5 text-xs text-[#0C534E] font-bold">
-            <Lock className="w-3.5 h-3.5" />
-            <span>256-Bit SSL Encrypted Checkout</span>
+            <Shield className="w-4 h-4" />
+            <span>Secure Hosted Checkout</span>
           </div>
         </div>
 
         <form onSubmit={handleSubmitOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-          {/* Left Column: Customer & Payment Form */}
+          {/* Left Column: Contact, Address, & Payment Options */}
           <div className="lg:col-span-7 space-y-8">
             {/* 1. Contact Information */}
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-4">
@@ -199,12 +189,14 @@ export default function CheckoutPage() {
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-xs sm:text-sm outline-none focus:border-[#0C534E]"
                   />
                   <span className="text-[0.68rem] text-gray-400 mt-1 block">
-                    Order confirmation and shipping tracking will be sent here.
+                    Order confirmation and tracked shipping updates are dispatched here.
                   </span>
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-gray-600 block mb-1">Phone Number (Optional)</label>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">
+                    Phone Number (Optional)
+                  </label>
                   <input
                     type="tel"
                     name="phone"
@@ -258,7 +250,7 @@ export default function CheckoutPage() {
                     type="text"
                     name="address"
                     required
-                    placeholder="123 Bark Avenue"
+                    placeholder="123 Main Street"
                     value={formData.address}
                     onChange={handleInputChange}
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-xs sm:text-sm outline-none focus:border-[#0C534E]"
@@ -266,7 +258,9 @@ export default function CheckoutPage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-gray-600 block mb-1">Apartment, Suite, Unit (Optional)</label>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">
+                    Apartment, Suite (Optional)
+                  </label>
                   <input
                     type="text"
                     name="apartment"
@@ -284,7 +278,7 @@ export default function CheckoutPage() {
                       type="text"
                       name="city"
                       required
-                      placeholder="Portland"
+                      placeholder="San Francisco"
                       value={formData.city}
                       onChange={handleInputChange}
                       className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-xs sm:text-sm outline-none focus:border-[#0C534E]"
@@ -299,7 +293,9 @@ export default function CheckoutPage() {
                       className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-xs sm:text-sm outline-none focus:border-[#0C534E] bg-white"
                     >
                       {['CA', 'NY', 'TX', 'FL', 'WA', 'OR', 'IL', 'OH', 'CO', 'NC'].map((st) => (
-                        <option key={st} value={st}>{st}</option>
+                        <option key={st} value={st}>
+                          {st}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -309,7 +305,7 @@ export default function CheckoutPage() {
                       type="text"
                       name="zipCode"
                       required
-                      placeholder="97201"
+                      placeholder="94111"
                       value={formData.zipCode}
                       onChange={handleInputChange}
                       className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-xs sm:text-sm outline-none focus:border-[#0C534E]"
@@ -319,83 +315,126 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* 3. Payment Method (Secure Tokenized Architecture) */}
+            {/* 3. Payment Method (PCI Compliant Provider Integration - Zero Raw Card Inputs) */}
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-black text-[#162624] flex items-center gap-2">
                   <CreditCard className="w-5 h-5 text-[#0C534E]" />
-                  <span>3. Payment Information</span>
+                  <span>3. Payment Method</span>
                 </h2>
-                <span className="text-xs text-emerald-600 font-bold flex items-center gap-1">
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>Stripe Protected</span>
-                </span>
+                <span className="text-xs text-gray-400 font-medium">Step 3 of 3</span>
               </div>
 
-              <p className="text-xs text-gray-500">
-                All transactions are securely tokenized with 256-bit encryption. We never store raw card numbers.
+              <p className="text-xs text-gray-500 leading-relaxed">
+                Payment is processed securely through our provider gateway. We do not collect or store raw payment card data on our servers.
               </p>
 
-              <div className="p-4 rounded-2xl bg-[#FAFBF9] border border-gray-200 space-y-3">
-                <div>
-                  <label className="text-xs font-bold text-gray-600 block mb-1">Card Number *</label>
-                  <input
-                    type="text"
-                    name="cardNumber"
-                    required
-                    placeholder="4242 •••• •••• 4242 (Test Mode)"
-                    value={cardDetails.cardNumber}
-                    onChange={handleCardChange}
-                    maxLength={19}
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-xs sm:text-sm outline-none focus:border-[#0C534E] bg-white font-mono"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-bold text-gray-600 block mb-1">Expires (MM/YY) *</label>
+              <div className="space-y-3">
+                <label className="p-4 rounded-2xl border-2 border-[#0C534E] bg-[#F0F7F6] flex items-center justify-between cursor-pointer">
+                  <div className="flex items-center gap-3">
                     <input
-                      type="text"
-                      name="expDate"
-                      required
-                      placeholder="12/28"
-                      maxLength={5}
-                      value={cardDetails.expDate}
-                      onChange={handleCardChange}
-                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-xs sm:text-sm outline-none focus:border-[#0C534E] bg-white font-mono"
+                      type="radio"
+                      name="paymentProvider"
+                      checked={paymentProvider === 'stripe'}
+                      onChange={() => setPaymentProvider('stripe')}
+                      className="accent-[#0C534E] w-4 h-4"
                     />
+                    <div>
+                      <span className="font-black text-sm text-[#162624] block">
+                        Credit / Debit Card (Stripe Gateway & Test Simulation)
+                      </span>
+                      <span className="text-xs text-gray-500 block">
+                        Compliant hosted tokenization element.
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-xs font-bold text-gray-600 block mb-1">Security CVC *</label>
-                    <input
-                      type="text"
-                      name="cvc"
-                      required
-                      placeholder="123"
-                      maxLength={4}
-                      value={cardDetails.cvc}
-                      onChange={handleCardChange}
-                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-xs sm:text-sm outline-none focus:border-[#0C534E] bg-white font-mono"
-                    />
-                  </div>
-                </div>
+                  <CreditCard className="w-5 h-5 text-[#0C534E]" />
+                </label>
 
-                <div>
-                  <label className="text-xs font-bold text-gray-600 block mb-1">Name on Card *</label>
-                  <input
-                    type="text"
-                    name="nameOnCard"
-                    required
-                    placeholder="Jane Doe"
-                    value={cardDetails.nameOnCard}
-                    onChange={handleCardChange}
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-xs sm:text-sm outline-none focus:border-[#0C534E] bg-white"
-                  />
+                <label className="p-4 rounded-2xl border border-gray-200 bg-white flex items-center justify-between cursor-pointer hover:border-gray-300">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="paymentProvider"
+                      checked={paymentProvider === 'paystack'}
+                      onChange={() => setPaymentProvider('paystack')}
+                      className="accent-[#0C534E] w-4 h-4"
+                    />
+                    <div>
+                      <span className="font-black text-sm text-[#162624] block">
+                        Paystack Gateway
+                      </span>
+                      <span className="text-xs text-gray-500 block">
+                        African & international merchant checkout adapter.
+                      </span>
+                    </div>
+                  </div>
+                  <Truck className="w-5 h-5 text-gray-400" />
+                </label>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#FAFBF9] border border-gray-100 flex items-center gap-2 text-xs text-gray-600">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Totals are re-calculated and verified server-side prior to charge authorization.</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Order Summary */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6 sticky top-24">
+              <h2 className="text-lg font-black text-[#162624] border-b border-gray-100 pb-4">
+                Order Summary ({cart.length} {cart.length === 1 ? 'item' : 'items'})
+              </h2>
+
+              <div className="max-h-64 overflow-y-auto divide-y divide-gray-100 pr-1">
+                {cart.map((item) => (
+                  <div key={item.product.id} className="py-3 flex gap-3 items-center">
+                    <div className="w-14 h-14 rounded-xl bg-gray-50 border border-gray-100 overflow-hidden relative shrink-0">
+                      <Image
+                        src={item.product.images[0] || '/brand/zenpaaw-symbol.svg'}
+                        alt={item.product.name}
+                        fill
+                        className="object-contain p-1"
+                        sizes="56px"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-xs font-bold text-[#162624] truncate">{item.product.name}</h4>
+                      <span className="text-[0.68rem] text-gray-500">Qty: {item.quantity}</span>
+                    </div>
+                    <span className="text-xs font-black text-[#0C534E] tabular-nums">
+                      ${(item.product.price * item.quantity).toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-2.5 pt-4 border-t border-gray-100 text-xs">
+                <div className="flex justify-between text-gray-600">
+                  <span>Subtotal</span>
+                  <span className="font-bold tabular-nums">${subtotal.toFixed(2)}</span>
+                </div>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-emerald-600 font-bold">
+                    <span>Discount</span>
+                    <span className="tabular-nums">-${discountAmount.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-gray-600">
+                  <span>Shipping</span>
+                  <span className="font-bold tabular-nums">
+                    {isFreeShipping ? 'FREE' : `$${shippingCost.toFixed(2)}`}
+                  </span>
+                </div>
+                <div className="flex justify-between text-base font-black text-[#162624] pt-3 border-t border-gray-100">
+                  <span>Total</span>
+                  <span className="text-[#0C534E] tabular-nums">${estimatedTotal.toFixed(2)}</span>
                 </div>
               </div>
 
               {errorMsg && (
-                <div className="p-3.5 rounded-xl bg-red-50 text-red-700 text-xs font-bold flex items-center gap-2">
+                <div className="p-3.5 rounded-2xl bg-red-50 text-red-700 text-xs font-bold flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{errorMsg}</span>
                 </div>
@@ -404,93 +443,14 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 disabled={isProcessing}
-                className="w-full py-4 rounded-full bg-[#FFC800] text-[#162624] font-black text-base hover:bg-[#E5B400] shadow-xl shadow-[#FFC800]/25 transition duration-200 disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95"
+                className="w-full py-4 rounded-full bg-[#0C534E] text-[#FFC800] font-black text-xs uppercase tracking-wider hover:bg-[#093B37] transition shadow-lg shadow-[#0C534E]/25 flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {isProcessing ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-[#162624] border-t-transparent rounded-full animate-spin" />
-                    <span>Authorizing Payment...</span>
-                  </>
+                  <span className="w-4 h-4 border-2 border-[#FFC800] border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <>
-                    <Lock className="w-4 h-4" />
-                    <span>Pay ${total.toFixed(2)} USD</span>
-                  </>
+                  <span>Complete Order • ${estimatedTotal.toFixed(2)}</span>
                 )}
               </button>
-            </div>
-          </div>
-
-          {/* Right Column: Order Summary Breakdown */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-4">
-              <h3 className="text-lg font-black text-[#162624]">Order Summary ({cart.length} items)</h3>
-
-              {/* Items List */}
-              <div className="divide-y divide-gray-100 max-h-72 overflow-y-auto pr-1">
-                {cart.map((item) => (
-                  <div key={item.product.id} className="py-3 flex items-center gap-3">
-                    <div className="w-16 h-16 rounded-xl bg-[#FAFBF9] border border-gray-100 overflow-hidden relative shrink-0">
-                      <Image
-                        src={item.product.images[0]}
-                        alt={item.product.name}
-                        fill
-                        className="object-cover"
-                      />
-                      <span className="absolute top-1 right-1 w-5 h-5 rounded-full bg-[#0C534E] text-[#FFC800] text-[0.62rem] font-bold flex items-center justify-center">
-                        {item.quantity}
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-bold text-xs text-[#162624] truncate">{item.product.name}</h4>
-                      <p className="text-[0.68rem] text-gray-500">{item.product.category}</p>
-                    </div>
-                    <span className="font-extrabold text-xs text-[#0C534E] tabular-nums">
-                      ${(item.product.price * item.quantity).toFixed(2)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Price Breakdown */}
-              <div className="space-y-2 text-xs pt-3 border-t border-gray-100">
-                <div className="flex justify-between text-gray-500">
-                  <span>Subtotal</span>
-                  <span className="font-bold text-[#162624] tabular-nums">${subtotal.toFixed(2)}</span>
-                </div>
-                {discountAmount > 0 && (
-                  <div className="flex justify-between text-emerald-600 font-bold">
-                    <span>Discount ({appliedCoupon?.code})</span>
-                    <span className="tabular-nums">-${discountAmount.toFixed(2)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-gray-500">
-                  <span>Standard U.S. Shipping</span>
-                  <span className="font-bold text-[#162624]">
-                    {isFreeShipping ? <span className="text-emerald-600">FREE</span> : `$${shippingCost.toFixed(2)}`}
-                  </span>
-                </div>
-                <div className="flex justify-between text-gray-500">
-                  <span>Estimated Taxes</span>
-                  <span className="font-bold text-gray-400">Included</span>
-                </div>
-                <div className="flex justify-between text-base font-black text-[#162624] pt-3 border-t border-gray-200">
-                  <span>Total Due</span>
-                  <span className="text-[#0C534E] tabular-nums">${total.toFixed(2)}</span>
-                </div>
-              </div>
-
-              {/* Trust Badges */}
-              <div className="pt-4 border-t border-gray-100 space-y-2 text-[0.72rem] text-gray-500">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#0C534E]" />
-                  <span>30-Day Money-Back Play Guarantee</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Truck className="w-4 h-4 text-[#0C534E]" />
-                  <span>Ships in 1-2 business days with USPS/UPS tracking</span>
-                </div>
-              </div>
             </div>
           </div>
         </form>

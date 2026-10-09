@@ -27,7 +27,7 @@ export const trackEvent = (
 
   // Log in development for transparent QA verification
   if (process.env.NODE_ENV !== 'production') {
-    console.log(`[ZenPaaw Analytics] 📊 Event: ${eventName}`, params);
+    console.log(`[ZenPaaw Analytics] Event: ${eventName}`, params);
   }
 
   // 1. Google Analytics 4 (GA4)

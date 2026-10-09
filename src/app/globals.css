@@ -105,3 +105,16 @@ h1, h2, h3, .font-display {
 ::-webkit-scrollbar-thumb:hover {
   background: #0c534e;
 }
+
+/* Remove developer indicators, dev badges, and bottom-corner toast packs */
+nextjs-portal,
+[data-nextjs-dev-tools],
+[data-next-badge],
+div[data-nextjs-toast],
+div[data-nextjs-toast-wrapper],
+#nextjs-dev-tools,
+.__next-dev-tools {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

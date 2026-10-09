@@ -49,6 +49,7 @@ export async function POST(req: Request) {
 
     const response = NextResponse.json({
       success: true,
+      token,
       user: { email, name: 'Store Operator' },
     });
 

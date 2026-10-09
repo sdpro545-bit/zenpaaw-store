@@ -42,23 +42,23 @@ export default function AboutPage() {
             Dogs need more than just one repetitive action. They want to chew when they need to soothe themselves or clean their gums. They want to fetch when they have boundless energy outdoors. And they want to interact and solve small challenges when they are lounging at home.
           </p>
           <p>
-            Most pet parents end up buying multiple cheap toys that fall apart in minutes or fail to hold their pet&apos;s attention. Our product strategy is focused on <strong>curated, multi-purpose enrichment</strong>: sourcing high-durability, non-toxic materials, packaging them thoughtfully, and engineering toys that deliver multiple ways to play from a single purchase.
+            Most pet toys break quickly or fail to hold attention. Our focus is multi-purpose enrichment: sourcing durable materials, clear packaging, and toys that provide distinct ways to play from a single purchase.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
             <div className="p-5 rounded-2xl bg-[#FAFBF9] border border-gray-100 space-y-2">
               <RefreshCw className="w-6 h-6 text-[#0C534E]" />
-              <h4 className="font-extrabold text-sm text-[#162624]">Variety Without Clutter</h4>
+              <h4 className="font-extrabold text-sm text-[#162624]">Play Variety</h4>
               <p className="text-xs text-gray-500">
-                Our 3-in-1 flagship concept merges bouncing, chewing, and rope-tugging into one durable toy.
+                Toys that combine bouncing, chewing, or tugging to match how your pet plays.
               </p>
             </div>
 
             <div className="p-5 rounded-2xl bg-[#FAFBF9] border border-gray-100 space-y-2">
               <Shield className="w-6 h-6 text-[#0C534E]" />
-              <h4 className="font-extrabold text-sm text-[#162624]">Food-Grade Safety</h4>
+              <h4 className="font-extrabold text-sm text-[#162624]">Tested Materials</h4>
               <p className="text-xs text-gray-500">
-                100% BPA-free thermoplastic rubber (TPR) and natural cotton fibers safe for everyday canine mouths.
+                Natural rubber and cotton fibers designed for everyday fetch and chew sessions.
               </p>
             </div>
 
@@ -66,17 +66,17 @@ export default function AboutPage() {
               <Heart className="w-6 h-6 text-[#0C534E]" />
               <h4 className="font-extrabold text-sm text-[#162624]">Honest Pet Value</h4>
               <p className="text-xs text-gray-500">
-                Fair direct pricing, no inflated markups, and responsive support from real dog lovers.
+                Direct pricing, clear specifications, and straightforward 30-day returns.
               </p>
             </div>
           </div>
 
           <div className="pt-6 border-t border-gray-100 text-center">
             <Link
-              href="/product/zenpaaw-3-in-1-pet-toy"
+              href="/shop"
               className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-[#0C534E] text-[#FFC800] font-black text-sm hover:bg-[#093B37] shadow-lg shadow-[#0C534E]/20 transition"
             >
-              <span>Explore the 3-in-1 Toy</span>
+              <span>Explore All Toys</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>

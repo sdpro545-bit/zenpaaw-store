@@ -1,514 +1,244 @@
-'use client';
-
-import React, { useState, useEffect, Suspense } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Image from 'next/image';
+import React from 'react';
+import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { initialProducts } from '@/data/products';
-import { useCart } from '@/context/CartContext';
-import { Product, Review } from '@/types';
-import {
-  Star,
-  Plus,
-  Minus,
-  ShoppingBag,
-  Zap,
-  Truck,
-  RotateCcw,
-  ShieldCheck,
-  ChevronDown,
-  ChevronUp,
-  Check,
-  Share2,
-  Sparkles
-} from 'lucide-react';
-import { trackEvent } from '@/lib/analytics';
+import { ChevronRight, ShieldCheck, AlertCircle, Sparkles } from 'lucide-react';
+import { db } from '@/lib/db';
+import { ProductGallery } from '@/components/ProductGallery';
+import { ProductBuyBox } from '@/components/ProductBuyBox';
+import { ProductCard } from '@/components/ProductCard';
+import { RevealText } from '@/components/RevealText';
+import type { Metadata } from 'next';
+export const instant = false;
 
-function ProductDetailContent() {
-  const params = useParams();
-  const router = useRouter();
-  const slug = params?.slug as string;
-  const { addToCart } = useCart();
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const product = db.getProductBySlug(slug);
+  if (!product) return { title: 'Product Not Found | ZenPaaw' };
 
-  const [product, setProduct] = useState<Product | null>(null);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [quantity, setQuantity] = useState(1);
-  const [openAccordion, setOpenAccordion] = useState<string>('how-it-works');
-  const [showReviewForm, setShowReviewForm] = useState(false);
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [newReview, setNewReview] = useState({
-    author: '',
-    petName: '',
-    petBreed: '',
-    rating: 5,
-    title: '',
-    comment: ''
-  });
-  const [reviewSubmitted, setReviewSubmitted] = useState(false);
-
-  useEffect(() => {
-    const found = initialProducts.find((p) => p.slug === slug) || initialProducts[0];
-    setProduct(found);
-
-    // Track view_item event
-    trackEvent('view_item', {
-      item_id: found.id,
-      item_name: found.name,
-      price: found.price,
-      category: found.category
-    });
-
-    // Fetch reviews
-    fetch(`/api/reviews?productId=${found.id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.reviews) setReviews(data.reviews);
-      })
-      .catch(() => {});
-  }, [slug]);
-
-  if (!product) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-[#0C534E] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  const handleBuyNow = () => {
-    addToCart(product, quantity);
-    router.push('/checkout');
+  return {
+    title: `${product.title} | ZenPaaw Pet Toys`,
+    description: product.summary || product.description.slice(0, 160),
+    openGraph: {
+      title: product.title,
+      description: product.summary,
+      images: product.images[0]?.url ? [{ url: product.images[0].url }] : [],
+    },
   };
-
-  const handleAddReview = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newReview.author || !newReview.comment) return;
-
-    try {
-      const res = await fetch('/api/reviews', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          productId: product.id,
-          ...newReview
-        })
-      });
-      const data = await res.json();
-      if (res.ok && data.review) {
-        setReviews([data.review, ...reviews]);
-        setReviewSubmitted(true);
-        setShowReviewForm(false);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const toggleAccordion = (id: string) => {
-    setOpenAccordion(openAccordion === id ? '' : id);
-  };
-
-  const discountPercent = product.compareAtPrice
-    ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
-    : 0;
-
-  return (
-    <div className="bg-[#FAFBF9] min-h-screen pb-20">
-      {/* Breadcrumb Bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <nav className="flex items-center text-xs text-gray-500 font-medium gap-2">
-          <Link href="/" className="hover:text-[#0C534E]">Home</Link>
-          <span>/</span>
-          <Link href="/shop" className="hover:text-[#0C534E]">Shop</Link>
-          <span>/</span>
-          <span className="text-[#162624] font-bold truncate">{product.name}</span>
-        </nav>
-      </div>
-
-      {/* Product Main Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-16">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
-          {/* Left: Product Image Gallery */}
-          <div className="lg:col-span-7 space-y-4">
-            {/* Main Stage Image */}
-            <div className="relative aspect-square w-full rounded-3xl overflow-hidden bg-white border border-gray-200/80 shadow-md">
-              <Image
-                src={product.images[selectedImageIndex] || product.images[0]}
-                alt={`${product.name} large view`}
-                fill
-                priority
-                className="object-contain p-6 transition-all duration-300"
-              />
-
-              {product.isFlagship && (
-                <div className="absolute top-4 left-4 px-3.5 py-1.5 rounded-full bg-[#0C534E] text-[#FFC800] text-xs font-black uppercase tracking-wider shadow-md">
-                  ★ Flagship 3-in-1 Concept
-                </div>
-              )}
-
-              {discountPercent > 0 && (
-                <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-emerald-600 text-white text-xs font-black shadow-md">
-                  Save {discountPercent}%
-                </div>
-              )}
-            </div>
-
-            {/* Thumbnail Strip */}
-            <div className="grid grid-cols-4 gap-3">
-              {product.images.map((img, idx) => (
-                <button
-                  key={img}
-                  onClick={() => setSelectedImageIndex(idx)}
-                  className={`relative aspect-square rounded-2xl overflow-hidden bg-white border-2 transition-all duration-200 ${
-                    selectedImageIndex === idx
-                      ? 'border-[#0C534E] shadow-md ring-2 ring-[#0C534E]/20'
-                      : 'border-gray-200 hover:border-gray-300 opacity-70 hover:opacity-100'
-                  }`}
-                >
-                  <Image src={img} alt={`Thumbnail ${idx + 1}`} fill className="object-cover" />
-                </button>
-              ))}
-            </div>
-
-            {/* Packaging Visual Guarantee Note */}
-            <div className="p-4 rounded-2xl bg-[#F0F7F6] border border-[#E2EBEA] flex items-center gap-3 text-xs text-[#0C534E]">
-              <Sparkles className="w-5 h-5 text-[#FFC800] shrink-0" />
-              <span>
-                Ships in our signature unbleached kraft packaging box. Clean, eco-conscious, and gift-ready.
-              </span>
-            </div>
-          </div>
-
-          {/* Right: Product Purchase Details & Accordions */}
-          <div className="lg:col-span-5 space-y-6">
-            <div>
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="px-3 py-1 rounded-full bg-[#F0F7F6] text-[#0C534E] text-xs font-extrabold uppercase tracking-wider">
-                  {product.category}
-                </span>
-                <span className="text-xs text-emerald-600 font-bold flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  In Stock & Ready to Ship
-                </span>
-              </div>
-
-              <h1 className="text-3xl sm:text-4xl font-black text-[#162624] tracking-tight">
-                {product.name}
-              </h1>
-
-              {/* Rating & Reviews */}
-              <div className="flex items-center gap-2 mt-2">
-                <div className="flex items-center text-[#FFC800]">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-[#FFC800]" />
-                  ))}
-                </div>
-                <span className="text-sm font-extrabold text-[#162624]">{product.rating.toFixed(1)}</span>
-                <span className="text-xs text-gray-400">({product.reviewCount} verified reviews)</span>
-              </div>
-            </div>
-
-            {/* Price Block */}
-            <div className="p-4 rounded-2xl bg-white border border-gray-100 shadow-sm flex items-baseline justify-between">
-              <div>
-                <div className="flex items-baseline gap-2.5">
-                  <span className="text-3xl sm:text-4xl font-black text-[#0C534E] tabular-nums">
-                    ${product.price.toFixed(2)}
-                  </span>
-                  {product.compareAtPrice && (
-                    <span className="text-base sm:text-lg text-gray-400 line-through tabular-nums">
-                      ${product.compareAtPrice.toFixed(2)}
-                    </span>
-                  )}
-                </div>
-                <span className="text-[0.68rem] text-gray-400">Taxes calculated at checkout</span>
-              </div>
-
-              {discountPercent > 0 && (
-                <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
-                  You Save ${(product.compareAtPrice! - product.price).toFixed(2)}
-                </span>
-              )}
-            </div>
-
-            {/* Short Tagline / Value Summary */}
-            <p className="text-sm text-gray-600 leading-relaxed font-medium">
-              {product.description}
-            </p>
-
-            {/* Quantity Selector & Action Buttons */}
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center gap-4">
-                <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Quantity</span>
-                <div className="flex items-center border border-gray-200 rounded-full bg-white px-3 py-1">
-                  <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="p-1 hover:text-[#0C534E] text-gray-500 transition"
-                  >
-                    <Minus className="w-4 h-4" />
-                  </button>
-                  <span className="w-10 text-center font-bold text-sm text-[#162624] tabular-nums">
-                    {quantity}
-                  </span>
-                  <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="p-1 hover:text-[#0C534E] text-gray-500 transition"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                <button
-                  onClick={() => addToCart(product, quantity)}
-                  className="flex-1 py-4 px-6 rounded-full bg-[#FFC800] text-[#162624] font-black text-base hover:bg-[#E5B400] shadow-xl shadow-[#FFC800]/25 transition active:scale-95 flex items-center justify-center gap-2"
-                >
-                  <ShoppingBag className="w-5 h-5" />
-                  <span>Add to Cart • ${(product.price * quantity).toFixed(2)}</span>
-                </button>
-
-                <button
-                  onClick={handleBuyNow}
-                  className="flex-1 py-4 px-6 rounded-full bg-[#0C534E] text-white font-black text-base hover:bg-[#093B37] shadow-xl shadow-[#0C534E]/20 transition active:scale-95 flex items-center justify-center gap-2"
-                >
-                  <Zap className="w-5 h-5 fill-current text-[#FFC800]" />
-                  <span>Buy It Now</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Trust Pillars */}
-            <div className="grid grid-cols-2 gap-3 pt-3 text-xs text-gray-600">
-              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white border border-gray-100">
-                <Truck className="w-4 h-4 text-[#0C534E]" />
-                <span>Free U.S. Shipping over $35</span>
-              </div>
-              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white border border-gray-100">
-                <RotateCcw className="w-4 h-4 text-[#0C534E]" />
-                <span>30-Day Play Guarantee</span>
-              </div>
-            </div>
-
-            {/* Accordion Specification Panels */}
-            <div className="space-y-2 pt-4 border-t border-gray-200">
-              {/* Accordion 1: How It Works */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <button
-                  onClick={() => toggleAccordion('how-it-works')}
-                  className="w-full px-5 py-3.5 flex items-center justify-between text-left font-extrabold text-sm text-[#162624]"
-                >
-                  <span>How It Works (Play • Chew • Fetch)</span>
-                  {openAccordion === 'how-it-works' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                </button>
-                {openAccordion === 'how-it-works' && product.playModes && (
-                  <div className="px-5 pb-4 text-xs text-gray-600 space-y-2 border-t border-gray-100 pt-3">
-                    <p><strong>1. Play:</strong> {product.playModes.play}</p>
-                    <p><strong>2. Chew:</strong> {product.playModes.chew}</p>
-                    <p><strong>3. Fetch:</strong> {product.playModes.fetch}</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Accordion 2: Materials & Specs */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <button
-                  onClick={() => toggleAccordion('specs')}
-                  className="w-full px-5 py-3.5 flex items-center justify-between text-left font-extrabold text-sm text-[#162624]"
-                >
-                  <span>Materials & Specifications</span>
-                  {openAccordion === 'specs' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                </button>
-                {openAccordion === 'specs' && (
-                  <div className="px-5 pb-4 text-xs text-gray-600 space-y-1.5 border-t border-gray-100 pt-3">
-                    <p><strong>Materials:</strong> {product.specs.materials}</p>
-                    <p><strong>Dimensions:</strong> {product.specs.dimensions}</p>
-                    <p><strong>Weight:</strong> {product.specs.weight}</p>
-                    <p><strong>Suitable For:</strong> {product.specs.suitableFor}</p>
-                    <p><strong>Cleaning:</strong> {product.specs.cleaning}</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Accordion 3: What's Included */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <button
-                  onClick={() => toggleAccordion('included')}
-                  className="w-full px-5 py-3.5 flex items-center justify-between text-left font-extrabold text-sm text-[#162624]"
-                >
-                  <span>What&apos;s Included</span>
-                  {openAccordion === 'included' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                </button>
-                {openAccordion === 'included' && (
-                  <ul className="px-5 pb-4 text-xs text-gray-600 space-y-1 border-t border-gray-100 pt-3 list-disc pl-8">
-                    {product.includedItems.map((item, idx) => (
-                      <li key={idx}>{item}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-
-              {/* Accordion 4: Safety & Care */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <button
-                  onClick={() => toggleAccordion('safety')}
-                  className="w-full px-5 py-3.5 flex items-center justify-between text-left font-extrabold text-sm text-[#162624]"
-                >
-                  <span>Pet Safety & Supervised Play Guidance</span>
-                  {openAccordion === 'safety' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                </button>
-                {openAccordion === 'safety' && (
-                  <div className="px-5 pb-4 text-xs text-gray-600 border-t border-gray-100 pt-3 leading-relaxed">
-                    {product.safetyGuidance}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Customer Reviews Section */}
-        <div className="mt-20 pt-12 border-t border-gray-200">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-            <div>
-              <h3 className="text-2xl font-black text-[#162624]">Customer Feedback</h3>
-              <p className="text-xs text-gray-500 mt-0.5">Real verified pet parent experiences with {product.name}</p>
-            </div>
-
-            <button
-              onClick={() => setShowReviewForm(!showReviewForm)}
-              className="px-5 py-2.5 rounded-full bg-[#0C534E] text-[#FFC800] text-xs font-black hover:bg-[#093B37] transition w-fit"
-            >
-              {showReviewForm ? 'Cancel' : 'Write a Review'}
-            </button>
-          </div>
-
-          {/* Interactive Review Form */}
-          {showReviewForm && (
-            <form onSubmit={handleAddReview} className="mb-10 p-6 rounded-3xl bg-white border border-gray-200 shadow-sm space-y-4">
-              <h4 className="font-extrabold text-base text-[#162624]">Share Your Pet&apos;s Experience</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <input
-                  type="text"
-                  placeholder="Your Name *"
-                  value={newReview.author}
-                  onChange={(e) => setNewReview({ ...newReview, author: e.target.value })}
-                  required
-                  className="px-4 py-2.5 rounded-xl border border-gray-200 text-xs outline-none focus:border-[#0C534E]"
-                />
-                <input
-                  type="text"
-                  placeholder="Pet's Name"
-                  value={newReview.petName}
-                  onChange={(e) => setNewReview({ ...newReview, petName: e.target.value })}
-                  className="px-4 py-2.5 rounded-xl border border-gray-200 text-xs outline-none focus:border-[#0C534E]"
-                />
-                <input
-                  type="text"
-                  placeholder="Pet Breed (e.g. Golden Retriever)"
-                  value={newReview.petBreed}
-                  onChange={(e) => setNewReview({ ...newReview, petBreed: e.target.value })}
-                  className="px-4 py-2.5 rounded-xl border border-gray-200 text-xs outline-none focus:border-[#0C534E]"
-                />
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-gray-500">Rating:</span>
-                <select
-                  value={newReview.rating}
-                  onChange={(e) => setNewReview({ ...newReview, rating: Number(e.target.value) })}
-                  className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-bold"
-                >
-                  <option value={5}>⭐⭐⭐⭐⭐ (5 Stars)</option>
-                  <option value={4}>⭐⭐⭐⭐ (4 Stars)</option>
-                  <option value={3}>⭐⭐⭐ (3 Stars)</option>
-                </select>
-              </div>
-
-              <input
-                type="text"
-                placeholder="Review Headline (e.g. Barnaby loves it!)"
-                value={newReview.title}
-                onChange={(e) => setNewReview({ ...newReview, title: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-xs outline-none focus:border-[#0C534E]"
-              />
-
-              <textarea
-                placeholder="Write your review..."
-                rows={3}
-                value={newReview.comment}
-                onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
-                required
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-xs outline-none focus:border-[#0C534E]"
-              />
-
-              <button
-                type="submit"
-                className="px-6 py-2.5 rounded-full bg-[#FFC800] text-[#162624] text-xs font-black hover:bg-[#E5B400] transition"
-              >
-                Submit Review
-              </button>
-            </form>
-          )}
-
-          {reviewSubmitted && (
-            <div className="mb-6 p-4 rounded-2xl bg-emerald-50 text-emerald-800 text-xs font-bold flex items-center gap-2">
-              <Check className="w-4 h-4" />
-              <span>Thank you! Your verified pet review has been added.</span>
-            </div>
-          )}
-
-          {/* Reviews List */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {reviews.map((rev) => (
-              <div key={rev.id} className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center gap-1 text-[#FFC800] mb-2">
-                    {[...Array(rev.rating)].map((_, i) => (
-                      <Star key={i} className="w-3.5 h-3.5 fill-[#FFC800]" />
-                    ))}
-                  </div>
-                  <h4 className="font-extrabold text-sm text-[#162624] mb-1">{rev.title}</h4>
-                  <p className="text-xs text-gray-600 leading-relaxed">&ldquo;{rev.comment}&rdquo;</p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-[0.7rem] text-gray-400">
-                  <span className="font-bold text-[#162624]">{rev.author} {rev.petName && `& ${rev.petName}`}</span>
-                  <span className="text-emerald-600 font-bold">✓ Verified</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Sticky Mobile Add-to-Cart Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-gray-200 px-4 py-3 flex items-center justify-between gap-3 shadow-2xl">
-        <div>
-          <span className="text-xs text-gray-500 font-medium block truncate max-w-[120px]">{product.name}</span>
-          <span className="text-base font-black text-[#0C534E]">${product.price.toFixed(2)}</span>
-        </div>
-        <button
-          onClick={() => addToCart(product, quantity)}
-          className="flex-1 max-w-[220px] py-3 px-5 rounded-full bg-[#FFC800] text-[#162624] font-black text-sm hover:bg-[#E5B400] transition flex items-center justify-center gap-2"
-        >
-          <ShoppingBag className="w-4 h-4" />
-          <span>Add to Cart</span>
-        </button>
-      </div>
-    </div>
-  );
 }
 
-export default function ProductDetailPage() {
+export default async function ProductDetailPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const product = db.getProductBySlug(slug);
+
+  if (!product) {
+    notFound();
+  }
+
+  // Related products from same category or pet type
+  const related = db
+    .getProducts({ categoryId: product.categoryId, status: 'active' })
+    .filter((p) => p.id !== product.id)
+    .slice(0, 4);
+
+  const minPrice = Math.min(...product.variants.map((v) => v.priceCents)) / 100;
+  const verifiedClaims = product.claims.filter((c) => c.verified);
+
+  // Structured Data (JSON-LD)
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.title,
+    description: product.summary,
+    image: product.images.map((img) => img.url),
+    offers: {
+      '@type': 'Offer',
+      price: minPrice.toFixed(2),
+      priceCurrency: 'USD',
+      availability: product.variants.some((v) => v.available)
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
+    },
+  };
+
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-[70vh] flex items-center justify-center">
-          <div className="w-10 h-10 border-4 border-[#0C534E] border-t-transparent rounded-full animate-spin" />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-16">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      {/* Breadcrumbs */}
+      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-gray-500 font-medium">
+        <Link href="/" className="hover:text-[#0C534E]">
+          Home
+        </Link>
+        <ChevronRight className="w-3.5 h-3.5" />
+        <Link href="/shop" className="hover:text-[#0C534E]">
+          Shop
+        </Link>
+        <ChevronRight className="w-3.5 h-3.5" />
+        <span className="text-gray-400 capitalize">{product.categoryId.replace('-', ' ')}</span>
+        <ChevronRight className="w-3.5 h-3.5" />
+        <span className="text-[#162624] font-bold truncate max-w-[200px]">{product.title}</span>
+      </nav>
+
+      {/* Main Product Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
+        {/* Left: Gallery (Sticky on desktop) */}
+        <div className="lg:col-span-7">
+          <ProductGallery
+            images={product.images.map((img) => ({ url: img.url, alt: img.alt }))}
+            title={product.title}
+          />
         </div>
-      }
-    >
-      <ProductDetailContent />
-    </Suspense>
+
+        {/* Right: Buy Box */}
+        <div className="lg:col-span-5 space-y-6">
+          <div className="space-y-2">
+            <span className="text-xs font-black uppercase tracking-widest text-[#0C534E]">
+              {product.petTypes.join(' & ')} • {product.playStyles.join(', ')}
+            </span>
+            <RevealText as="h1" className="text-2xl sm:text-3xl font-black text-[#162624] leading-tight">
+              {product.title}
+            </RevealText>
+            <p className="text-sm text-gray-600 leading-relaxed">{product.summary}</p>
+          </div>
+
+          <ProductBuyBox
+            product={{
+              id: product.id,
+              slug: product.slug,
+              title: product.title,
+              summary: product.summary,
+              category: product.categoryId,
+              images: product.images.map((img) => img.url),
+            }}
+            variants={product.variants.map((v) => ({
+              id: v.id,
+              sku: v.sku,
+              option1Name: v.option1Name,
+              option1Value: v.option1Value,
+              option2Name: v.option2Name,
+              option2Value: v.option2Value,
+              priceCents: v.priceCents,
+              compareAtCents: v.compareAtCents,
+              available: v.available,
+              leadTimeDaysMin: v.leadTimeDaysMin,
+              leadTimeDaysMax: v.leadTimeDaysMax,
+            }))}
+          />
+
+          {/* Description & Overview */}
+          <div className="pt-6 border-t border-gray-100 space-y-3">
+            <h2 className="text-sm font-black uppercase tracking-wider text-[#162624]">Product Overview</h2>
+            <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">{product.description}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Verified Specifications Table (Section 5.4 Claims Policy) */}
+      <section className="bg-[#FAFBF9] rounded-3xl p-6 sm:p-10 border border-[#E2EBEA] space-y-6">
+        <div>
+          <span className="text-xs font-black uppercase tracking-widest text-[#0C534E]">Supplier Verified</span>
+          <h2 className="text-xl sm:text-2xl font-black text-[#162624] mt-1">Verified Specifications</h2>
+          <p className="text-xs sm:text-sm text-gray-500 mt-1">
+            All material and dimension claims are verified directly from manufacturer lab specifications.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {verifiedClaims.map((claim) => (
+            <div
+              key={claim.id}
+              className="p-4 rounded-2xl bg-white border border-gray-100 flex items-start justify-between gap-4"
+            >
+              <div>
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block">
+                  {claim.key}
+                </span>
+                <span className="text-sm font-black text-[#162624] mt-0.5 block">{claim.value}</span>
+              </div>
+              <span className="px-2 py-1 rounded-full bg-[#F0F7F6] text-[#0C534E] text-[0.65rem] font-bold">
+                Verified Spec
+              </span>
+            </div>
+          ))}
+
+          <div className="p-4 rounded-2xl bg-white border border-gray-100 flex items-start justify-between gap-4">
+            <div>
+              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block">
+                Chew Strength Rating
+              </span>
+              <span className="text-sm font-black text-[#162624] mt-0.5 block capitalize">
+                {product.chewStrength}
+              </span>
+            </div>
+            <span className="px-2 py-1 rounded-full bg-[#FFF6D6] text-[#E5B400] text-[0.65rem] font-bold">
+              Rating
+            </span>
+          </div>
+        </div>
+
+        {/* Safety and Supervision Guidance */}
+        <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/60 flex items-start gap-3 text-xs text-amber-900 leading-relaxed">
+          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div>
+            <strong>Safety and Supervision Notice:</strong> No pet toy is completely indestructible. Supervise your pet during play and inspect the toy regularly. Remove and replace the toy if parts become loose, worn, or separated to prevent accidental ingestion.
+          </div>
+        </div>
+      </section>
+
+      {/* Related Products */}
+      {related.length > 0 && (
+        <section className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-xs font-black uppercase tracking-widest text-[#0C534E]">More to Explore</span>
+              <h2 className="text-2xl font-black text-[#162624]">You May Also Like</h2>
+            </div>
+            <Link
+              href="/shop"
+              className="text-xs font-black uppercase tracking-wider text-[#0C534E] hover:underline"
+            >
+              View All Toys
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+            {related.map((rel) => {
+              const relMinPrice = Math.min(...rel.variants.map((v) => v.priceCents)) / 100;
+              return (
+                <ProductCard
+                  key={rel.id}
+                  product={{
+                    id: rel.id,
+                    slug: rel.slug,
+                    name: rel.title,
+                    category: rel.categoryId,
+                    tagline: rel.summary,
+                    price: relMinPrice,
+                    images: rel.images.map((img) => img.url),
+                    inStock: true,
+                    description: rel.description,
+                    features: [],
+                    specs: { materials: '', dimensions: '', weight: '', suitableFor: '', cleaning: '' },
+                    includedItems: [],
+                    safetyGuidance: '',
+                  }}
+                />
+              );
+            })}
+          </div>
+        </section>
+      )}
+    </div>
   );
 }

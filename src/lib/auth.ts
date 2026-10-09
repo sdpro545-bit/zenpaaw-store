@@ -88,10 +88,18 @@ export async function verifyAdminToken(token: string): Promise<AdminSessionUser 
 
 // Verify session from an incoming Next.js API Request
 export async function verifyAdminSession(req: Request): Promise<{ authenticated: boolean; user?: AdminSessionUser }> {
-  // Check Cookie header
+  // 1. Check Cookie header
   const cookieHeader = req.headers.get('cookie') || '';
   const match = cookieHeader.match(new RegExp(`(?:^|; )${COOKIE_NAME}=([^;]*)`));
-  const token = match ? decodeURIComponent(match[1]) : null;
+  let token = match ? decodeURIComponent(match[1]) : null;
+
+  // 2. Fallback to Authorization: Bearer <token>
+  if (!token) {
+    const authHeader = req.headers.get('authorization') || '';
+    if (authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7).trim();
+    }
+  }
 
   if (!token) {
     return { authenticated: false };

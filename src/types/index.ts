@@ -12,10 +12,10 @@ export interface Product {
   price: number;
   priceCents?: number;
   compareAtPrice?: number;
-  rating: number;
-  reviewCount: number;
+  rating?: number;
+  reviewCount?: number;
   inStock: boolean;
-  stockCount: number;
+  stockCount?: number;
   isFlagship?: boolean;
   isBestSeller?: boolean;
   images: string[];
