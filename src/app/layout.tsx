@@ -7,6 +7,7 @@ import { Footer } from '@/components/Footer';
 import { CartDrawer } from '@/components/CartDrawer';
 import { Suspense } from 'react';
 import { SplashOnboarding } from '@/components/SplashOnboarding';
+import { ScrollToTopButton } from '@/components/ScrollToTopButton';
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -102,6 +103,7 @@ export default function RootLayout({
           </Suspense>
           <main className="flex-grow pb-24 lg:pb-0">{children}</main>
           <CartDrawer />
+          <ScrollToTopButton />
           <Footer />
         </CartProvider>
       </body>

@@ -227,19 +227,18 @@ export const Header: React.FC = () => {
         </AnimatePresence>
       </header>
 
-      {/* Mobile & Tablet Bottom Tab Bar (Curved Dock with Elevated Active Bubble matching user reference) */}
+      {/* Mobile & Tablet Floating Bottom Pill Navigation Bar */}
       <nav
         aria-label="Mobile and tablet navigation"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 w-full bg-white border-t border-[#0C534E]/10 shadow-[0_-10px_35px_rgba(12,83,78,0.12)] pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] select-none transform-gpu"
+        className="lg:hidden fixed bottom-3 sm:bottom-4 left-3 right-3 sm:left-1/2 sm:-translate-x-1/2 max-w-md z-50 select-none overflow-visible mb-[env(safe-area-inset-bottom,0px)] transform-gpu"
         style={{
           WebkitTransform: 'translate3d(0, 0, 0)',
           transform: 'translate3d(0, 0, 0)',
           WebkitBackfaceVisibility: 'hidden',
           backfaceVisibility: 'hidden',
-          contain: 'layout paint',
         }}
       >
-        <div className="max-w-md mx-auto relative flex items-center justify-around px-2 pt-1 h-16">
+        <div className="relative w-full bg-white rounded-[2.2rem] border border-[#0C534E]/10 shadow-[0_12px_36px_rgba(12,83,78,0.18)] px-2 h-[4.2rem] flex items-center justify-around overflow-visible">
           {[
             { name: 'Home', href: '/', icon: Home, isActive: pathname === '/' && !isCartOpen },
             { name: 'Shop', href: '/shop', icon: Store, isActive: pathname === '/shop' && !isCartOpen },
@@ -251,22 +250,27 @@ export const Header: React.FC = () => {
 
             if (item.isCart) {
               return (
-                <div key={item.name} className="relative flex-1 flex flex-col items-center justify-center">
-                  {item.isActive ? (
-                    <button
-                      onClick={() => setIsCartOpen(false)}
-                      className="relative -top-3.5 flex flex-col items-center group cursor-pointer focus:outline-none"
-                      aria-label="Close Cart"
+                <div key={item.name} className="relative flex-1 flex flex-col items-center justify-center h-full overflow-visible">
+                  {item.isActive && (
+                    <motion.div
+                      layoutId="mobileNavActiveIndicator"
+                      transition={{
+                        type: 'spring',
+                        stiffness: 420,
+                        damping: 30,
+                        mass: 0.8,
+                      }}
+                      className="absolute -top-4 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none z-20 overflow-visible"
                     >
-                      {/* Curved Wave Notch Top Contour matching reference */}
+                      {/* Organic curved concave contour */}
                       <svg
                         viewBox="0 0 84 28"
-                        className="absolute -top-3 left-1/2 -translate-x-1/2 w-20 h-6 text-white fill-current pointer-events-none drop-shadow-[0_-3px_5px_rgba(0,0,0,0.04)]"
+                        className="absolute -top-2.5 left-1/2 -translate-x-1/2 w-20 h-6 text-white fill-current pointer-events-none drop-shadow-[0_-3px_5px_rgba(12,83,78,0.06)] overflow-visible"
                       >
                         <path d="M 0 28 C 16 28 20 0 42 0 C 64 0 68 28 84 28 Z" />
                       </svg>
                       {/* Elevated Circular Bubble with icon */}
-                      <div className="relative w-12 h-12 rounded-full bg-[#0C534E] text-[#FFC800] ring-4 ring-white shadow-[0_8px_20px_rgba(12,83,78,0.35)] flex items-center justify-center transition-transform active:scale-90">
+                      <div className="relative w-12 h-12 rounded-full bg-[#0C534E] text-[#FFC800] ring-4 ring-white shadow-[0_8px_24px_rgba(12,83,78,0.38)] flex items-center justify-center overflow-visible">
                         <Icon className="w-5 h-5 stroke-[2.5]" />
                         {itemCount > 0 && (
                           <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-[#FFC800] text-[#093B37] text-[0.62rem] font-black flex items-center justify-center shadow">
@@ -274,62 +278,78 @@ export const Header: React.FC = () => {
                           </span>
                         )}
                       </div>
-                      <span className="text-[0.68rem] font-black text-[#0C534E] mt-0.5 tracking-tight">Cart</span>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => setIsCartOpen(true)}
-                      className="relative flex flex-col items-center justify-center gap-0.5 py-1 text-gray-500 hover:text-[#0C534E] transition-colors cursor-pointer focus:outline-none active:scale-95"
-                      aria-label={`Open Cart (${itemCount} items)`}
-                    >
-                      <div className="relative">
-                        <Icon className="w-5 h-5 stroke-[2.2]" />
-                        {itemCount > 0 && (
-                          <span className="absolute -top-1.5 -right-2 min-w-4 h-4 px-1 rounded-full bg-[#FFC800] text-[#093B37] text-[0.62rem] font-black flex items-center justify-center shadow">
-                            {itemCount}
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-[0.68rem] font-bold tracking-tight">Cart</span>
-                    </button>
+                    </motion.div>
                   )}
+
+                  <button
+                    onClick={() => setIsCartOpen(!isCartOpen)}
+                    className="relative w-full h-full flex flex-col items-center justify-center cursor-pointer focus:outline-none touch-manipulation"
+                    aria-label={item.isActive ? 'Close Cart' : `Open Cart (${itemCount} items)`}
+                  >
+                    {item.isActive ? (
+                      <span className="text-[0.68rem] font-black text-[#0C534E] mt-5.5 tracking-tight">Cart</span>
+                    ) : (
+                      <>
+                        <div className="relative">
+                          <Icon className="w-5 h-5 stroke-[2.2] text-gray-400 group-hover:text-[#0C534E] transition-colors" />
+                          {itemCount > 0 && (
+                            <span className="absolute -top-1.5 -right-2 min-w-4 h-4 px-1 rounded-full bg-[#FFC800] text-[#093B37] text-[0.62rem] font-black flex items-center justify-center shadow">
+                              {itemCount}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[0.68rem] font-bold text-gray-500 tracking-tight mt-0.5">Cart</span>
+                      </>
+                    )}
+                  </button>
                 </div>
               );
             }
 
             return (
-              <div key={item.name} className="relative flex-1 flex flex-col items-center justify-center">
-                {item.isActive ? (
-                  <Link
-                    href={item.href!}
-                    prefetch={true}
-                    className="relative -top-3.5 flex flex-col items-center group touch-manipulation focus:outline-none"
+              <div key={item.name} className="relative flex-1 flex flex-col items-center justify-center h-full overflow-visible">
+                {item.isActive && (
+                  <motion.div
+                    layoutId="mobileNavActiveIndicator"
+                    transition={{
+                      type: 'spring',
+                      stiffness: 420,
+                      damping: 30,
+                      mass: 0.8,
+                    }}
+                    className="absolute -top-4 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none z-20 overflow-visible"
                   >
-                    {/* Curved Wave Notch Top Contour matching reference */}
+                    {/* Organic curved concave contour */}
                     <svg
                       viewBox="0 0 84 28"
-                      className="absolute -top-3 left-1/2 -translate-x-1/2 w-20 h-6 text-white fill-current pointer-events-none drop-shadow-[0_-3px_5px_rgba(0,0,0,0.04)]"
+                      className="absolute -top-2.5 left-1/2 -translate-x-1/2 w-20 h-6 text-white fill-current pointer-events-none drop-shadow-[0_-3px_5px_rgba(12,83,78,0.06)] overflow-visible"
                     >
                       <path d="M 0 28 C 16 28 20 0 42 0 C 64 0 68 28 84 28 Z" />
                     </svg>
                     {/* Elevated Circular Bubble with icon */}
-                    <div className="relative w-12 h-12 rounded-full bg-[#0C534E] text-[#FFC800] ring-4 ring-white shadow-[0_8px_20px_rgba(12,83,78,0.35)] flex items-center justify-center transition-transform active:scale-90">
+                    <div className="relative w-12 h-12 rounded-full bg-[#0C534E] text-[#FFC800] ring-4 ring-white shadow-[0_8px_24px_rgba(12,83,78,0.38)] flex items-center justify-center overflow-visible">
                       <Icon className="w-5 h-5 stroke-[2.5]" />
                     </div>
-                    <span className="text-[0.68rem] font-black text-[#0C534E] mt-0.5 tracking-tight">
+                  </motion.div>
+                )}
+
+                <Link
+                  href={item.href!}
+                  prefetch={true}
+                  className="relative w-full h-full flex flex-col items-center justify-center touch-manipulation focus:outline-none"
+                  aria-label={item.name}
+                >
+                  {item.isActive ? (
+                    <span className="text-[0.68rem] font-black text-[#0C534E] mt-5.5 tracking-tight">
                       {item.name}
                     </span>
-                  </Link>
-                ) : (
-                  <Link
-                    href={item.href!}
-                    prefetch={true}
-                    className="flex flex-col items-center justify-center gap-0.5 py-1 text-gray-500 hover:text-[#0C534E] transition-colors touch-manipulation focus:outline-none active:scale-95"
-                  >
-                    <Icon className="w-5 h-5 stroke-[2.2]" />
-                    <span className="text-[0.68rem] font-bold tracking-tight">{item.name}</span>
-                  </Link>
-                )}
+                  ) : (
+                    <>
+                      <Icon className="w-5 h-5 stroke-[2.2] text-gray-400 group-hover:text-[#0C534E] transition-colors" />
+                      <span className="text-[0.68rem] font-bold text-gray-500 tracking-tight mt-0.5">{item.name}</span>
+                    </>
+                  )}
+                </Link>
               </div>
             );
           })}

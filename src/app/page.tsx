@@ -23,6 +23,7 @@ import { FaqAccordion } from '@/components/FaqAccordion';
 import { HeroWordSwitcher } from '@/components/HeroWordSwitcher';
 import { AnimatedBouncingToy } from '@/components/AnimatedBouncingToy';
 import { WiggleButton } from '@/components/WiggleButton';
+import { TypingBadge } from '@/components/TypingBadge';
 
 export default function HomePage() {
   // Query live database products
@@ -151,11 +152,8 @@ export default function HomePage() {
                   />
                 </div>
 
-                {/* Floating pill badge */}
-                <div className="absolute -bottom-2 left-2 sm:-left-2 z-20 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white text-[#162624] font-black text-xs shadow-xl flex items-center gap-2 border border-gray-100">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                  <span>Smart Toys, Smarter Pets</span>
-                </div>
+                {/* Floating pill badge with typing reveal text */}
+                <TypingBadge className="absolute -bottom-2 left-2 sm:-left-2 z-20" text="Smart Toys, Smarter Pets" />
               </div>
             </div>
           </div>
