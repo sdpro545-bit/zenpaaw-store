@@ -20,6 +20,10 @@ import { RevealText, RevealBlock } from '@/components/RevealText';
 import { FindToyGuide } from '@/components/FindToyGuide';
 import { FaqAccordion } from '@/components/FaqAccordion';
 
+import { HeroWordSwitcher } from '@/components/HeroWordSwitcher';
+import { AnimatedBouncingToy } from '@/components/AnimatedBouncingToy';
+import { WiggleButton } from '@/components/WiggleButton';
+
 export default function HomePage() {
   // Query live database products
   const allProducts = db.getProducts({ status: 'active' });
@@ -63,6 +67,9 @@ export default function HomePage() {
     <div className="space-y-16 sm:space-y-24 pb-16">
       {/* 1. HERO SECTION (Teal dominant, Outfit text reveal, true trust points) */}
       <section className="relative bg-[#0C534E] text-white pt-10 sm:pt-16 pb-16 sm:pb-24 overflow-hidden rounded-b-[2.5rem] shadow-xl">
+        {/* Animated Bouncing Pet Toy Background */}
+        <AnimatedBouncingToy />
+
         {/* Subtle decorative paw watermarks */}
         <div className="absolute -top-16 -left-16 w-80 h-80 opacity-5 pointer-events-none text-white">
           <svg viewBox="0 0 100 100" fill="currentColor">
@@ -75,38 +82,30 @@ export default function HomePage() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            {/* Left text column */}
-            <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[#FFC800] text-xs font-black uppercase tracking-widest shadow-sm">
-                <span className="w-2 h-2 rounded-full bg-[#FFC800]" />
-                <span>Pet Toys for Dogs and Cats</span>
+            {/* Left text column - Centered on mobile screen, Left-aligned on desktop */}
+            <div className="lg:col-span-7 space-y-6 text-center lg:text-left flex flex-col items-center lg:items-start">
+              {/* Category Pill - Centered on mobile */}
+              <div className="flex justify-center lg:justify-start w-full">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[#FFC800] text-xs font-black uppercase tracking-widest shadow-sm">
+                  <span className="w-2 h-2 rounded-full bg-[#FFC800]" />
+                  <span>Pet Toys for Dogs and Cats</span>
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <RevealText
-                  as="h1"
-                  highlightWords={['play', 'Last.']}
-                  className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.12] sm:leading-[1.08] text-white"
-                >
-                  Durable Pet Toys, Built to play, Made to Last.
-                </RevealText>
+              {/* Dynamic Auto Word Switcher for Play, Last, and Smart toys, smarter pets */}
+              <div className="w-full text-center lg:text-left">
+                <HeroWordSwitcher />
               </div>
 
-              <RevealBlock delay={0.15}>
-                <p className="text-sm sm:text-base lg:text-lg text-[#D3E8E6] max-w-xl mx-auto lg:mx-0 font-medium leading-relaxed">
+              <RevealBlock delay={0.15} className="w-full">
+                <p className="text-sm sm:text-base lg:text-lg text-[#D3E8E6] max-w-xl mx-auto lg:mx-0 font-medium leading-relaxed text-center lg:text-left">
                   Chew toys, fetch toys, tug ropes, and puzzle feeders for dogs and cats. Every order ships with verified carrier tracking.
                 </p>
               </RevealBlock>
 
-              {/* CTAs */}
-              <RevealBlock delay={0.25} className="pt-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4">
-                <Link
-                  href="/c/dogs"
-                  className="w-full sm:w-auto px-8 py-3.5 sm:py-4 rounded-full bg-[#FFC800] text-[#162624] font-black text-xs sm:text-sm uppercase tracking-wider hover:bg-[#E5B400] active:scale-95 transition-all shadow-lg shadow-[#FFC800]/20 flex items-center justify-center gap-2"
-                >
-                  <span>Shop Dog Toys</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+              {/* CTAs with Animated Wiggling Button */}
+              <RevealBlock delay={0.25} className="pt-2 w-full flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4">
+                <WiggleButton href="/c/dogs" label="Shop Dog Toys" />
                 <Link
                   href="/c/cats"
                   className="w-full sm:w-auto px-8 py-3.5 sm:py-4 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 border border-white/25 text-white font-black text-xs sm:text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2"
@@ -116,17 +115,17 @@ export default function HomePage() {
                 </Link>
               </RevealBlock>
 
-              {/* Three true trust points from store config */}
-              <RevealBlock delay={0.35} className="pt-6 border-t border-white/15 grid grid-cols-1 sm:grid-cols-3 gap-3.5 text-xs font-bold text-[#A3D2CD]">
-                <div className="flex items-center justify-center lg:justify-start gap-2">
+              {/* Three true trust points from store config - Centered on mobile */}
+              <RevealBlock delay={0.35} className="pt-6 border-t border-white/15 w-full grid grid-cols-1 sm:grid-cols-3 gap-3.5 text-xs font-bold text-[#A3D2CD]">
+                <div className="flex items-center justify-center lg:justify-start gap-2 text-center lg:text-left">
                   <Truck className="w-4 h-4 text-[#FFC800] shrink-0" />
                   <span>Free shipping over ${storeConfig.freeShippingThresholdCents / 100}</span>
                 </div>
-                <div className="flex items-center justify-center lg:justify-start gap-2">
+                <div className="flex items-center justify-center lg:justify-start gap-2 text-center lg:text-left">
                   <RotateCcw className="w-4 h-4 text-[#FFC800] shrink-0" />
                   <span>{storeConfig.returnWindowDays}-day returns</span>
                 </div>
-                <div className="flex items-center justify-center lg:justify-start gap-2">
+                <div className="flex items-center justify-center lg:justify-start gap-2 text-center lg:text-left">
                   <ShieldCheck className="w-4 h-4 text-[#FFC800] shrink-0" />
                   <span>Tracked delivery</span>
                 </div>

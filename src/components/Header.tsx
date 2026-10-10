@@ -14,10 +14,10 @@ import {
   X,
   Heart,
   Home,
-  Grid,
+  Store,
   ChevronRight,
   Bone,
-  Sparkles,
+  Cat,
 } from 'lucide-react';
 
 export const Header: React.FC = () => {
@@ -227,75 +227,112 @@ export const Header: React.FC = () => {
         </AnimatePresence>
       </header>
 
-      {/* Mobile & Tablet Bottom Tab Bar (Responsive for all screens < 1024px) */}
+      {/* Mobile & Tablet Bottom Tab Bar (Curved Dock with Elevated Active Bubble matching user reference) */}
       <nav
         aria-label="Mobile and tablet navigation"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-[#0C534E]/10 px-2 sm:px-6 py-2 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))]"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 w-full bg-white border-t border-[#0C534E]/10 shadow-[0_-10px_35px_rgba(12,83,78,0.12)] pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] select-none transform-gpu"
+        style={{
+          WebkitTransform: 'translate3d(0, 0, 0)',
+          transform: 'translate3d(0, 0, 0)',
+          WebkitBackfaceVisibility: 'hidden',
+          backfaceVisibility: 'hidden',
+          contain: 'layout paint',
+        }}
       >
-        <div className="max-w-md mx-auto flex items-center justify-around gap-1">
+        <div className="max-w-md mx-auto relative flex items-center justify-around px-2 pt-1 h-16">
           {[
-            { name: 'Home', href: '/', icon: Home, isActive: pathname === '/' },
-            { name: 'Shop', href: '/shop', icon: Grid, isActive: pathname === '/shop' },
-            { name: 'Dogs', href: '/c/dogs', icon: Bone, isActive: pathname.startsWith('/c/dogs') },
-            { name: 'Cats', href: '/c/cats', icon: Sparkles, isActive: pathname.startsWith('/c/cats') },
+            { name: 'Home', href: '/', icon: Home, isActive: pathname === '/' && !isCartOpen },
+            { name: 'Shop', href: '/shop', icon: Store, isActive: pathname === '/shop' && !isCartOpen },
+            { name: 'Dogs', href: '/c/dogs', icon: Bone, isActive: pathname.startsWith('/c/dogs') && !isCartOpen },
+            { name: 'Cats', href: '/c/cats', icon: Cat, isActive: pathname.startsWith('/c/cats') && !isCartOpen },
+            { name: 'Cart', isCart: true, icon: ShoppingBag, isActive: isCartOpen },
           ].map((item) => {
             const Icon = item.icon;
+
+            if (item.isCart) {
+              return (
+                <div key={item.name} className="relative flex-1 flex flex-col items-center justify-center">
+                  {item.isActive ? (
+                    <button
+                      onClick={() => setIsCartOpen(false)}
+                      className="relative -top-3.5 flex flex-col items-center group cursor-pointer focus:outline-none"
+                      aria-label="Close Cart"
+                    >
+                      {/* Curved Wave Notch Top Contour matching reference */}
+                      <svg
+                        viewBox="0 0 84 28"
+                        className="absolute -top-3 left-1/2 -translate-x-1/2 w-20 h-6 text-white fill-current pointer-events-none drop-shadow-[0_-3px_5px_rgba(0,0,0,0.04)]"
+                      >
+                        <path d="M 0 28 C 16 28 20 0 42 0 C 64 0 68 28 84 28 Z" />
+                      </svg>
+                      {/* Elevated Circular Bubble with icon */}
+                      <div className="relative w-12 h-12 rounded-full bg-[#0C534E] text-[#FFC800] ring-4 ring-white shadow-[0_8px_20px_rgba(12,83,78,0.35)] flex items-center justify-center transition-transform active:scale-90">
+                        <Icon className="w-5 h-5 stroke-[2.5]" />
+                        {itemCount > 0 && (
+                          <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-[#FFC800] text-[#093B37] text-[0.62rem] font-black flex items-center justify-center shadow">
+                            {itemCount}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[0.68rem] font-black text-[#0C534E] mt-0.5 tracking-tight">Cart</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setIsCartOpen(true)}
+                      className="relative flex flex-col items-center justify-center gap-0.5 py-1 text-gray-500 hover:text-[#0C534E] transition-colors cursor-pointer focus:outline-none active:scale-95"
+                      aria-label={`Open Cart (${itemCount} items)`}
+                    >
+                      <div className="relative">
+                        <Icon className="w-5 h-5 stroke-[2.2]" />
+                        {itemCount > 0 && (
+                          <span className="absolute -top-1.5 -right-2 min-w-4 h-4 px-1 rounded-full bg-[#FFC800] text-[#093B37] text-[0.62rem] font-black flex items-center justify-center shadow">
+                            {itemCount}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[0.68rem] font-bold tracking-tight">Cart</span>
+                    </button>
+                  )}
+                </div>
+              );
+            }
+
             return (
-              <Link
-                key={item.name}
-                href={item.href}
-                prefetch={true}
-                className="relative flex-1 py-1.5 px-1 flex flex-col items-center justify-center rounded-2xl transition-colors touch-manipulation"
-              >
-                {item.isActive && (
-                  <motion.div
-                    layoutId="mobileActiveTabIndicator"
-                    className="absolute inset-0 bg-[#0C534E] rounded-2xl shadow-sm"
-                    transition={{ type: 'spring', stiffness: 450, damping: 30 }}
-                  />
-                )}
-                <motion.div
-                  whileTap={{ scale: 0.82 }}
-                  className={`flex flex-col items-center gap-0.5 z-10 transition-colors duration-200 ${
-                    item.isActive ? 'text-[#FFC800]' : 'text-gray-600 hover:text-[#0C534E]'
-                  }`}
-                >
-                  <Icon className="w-5 h-5 stroke-[2.2]" />
-                  <span
-                    className={`text-[0.68rem] tracking-tight ${
-                      item.isActive ? 'font-black text-white' : 'font-bold'
-                    }`}
+              <div key={item.name} className="relative flex-1 flex flex-col items-center justify-center">
+                {item.isActive ? (
+                  <Link
+                    href={item.href!}
+                    prefetch={true}
+                    className="relative -top-3.5 flex flex-col items-center group touch-manipulation focus:outline-none"
                   >
-                    {item.name}
-                  </span>
-                </motion.div>
-              </Link>
+                    {/* Curved Wave Notch Top Contour matching reference */}
+                    <svg
+                      viewBox="0 0 84 28"
+                      className="absolute -top-3 left-1/2 -translate-x-1/2 w-20 h-6 text-white fill-current pointer-events-none drop-shadow-[0_-3px_5px_rgba(0,0,0,0.04)]"
+                    >
+                      <path d="M 0 28 C 16 28 20 0 42 0 C 64 0 68 28 84 28 Z" />
+                    </svg>
+                    {/* Elevated Circular Bubble with icon */}
+                    <div className="relative w-12 h-12 rounded-full bg-[#0C534E] text-[#FFC800] ring-4 ring-white shadow-[0_8px_20px_rgba(12,83,78,0.35)] flex items-center justify-center transition-transform active:scale-90">
+                      <Icon className="w-5 h-5 stroke-[2.5]" />
+                    </div>
+                    <span className="text-[0.68rem] font-black text-[#0C534E] mt-0.5 tracking-tight">
+                      {item.name}
+                    </span>
+                  </Link>
+                ) : (
+                  <Link
+                    href={item.href!}
+                    prefetch={true}
+                    className="flex flex-col items-center justify-center gap-0.5 py-1 text-gray-500 hover:text-[#0C534E] transition-colors touch-manipulation focus:outline-none active:scale-95"
+                  >
+                    <Icon className="w-5 h-5 stroke-[2.2]" />
+                    <span className="text-[0.68rem] font-bold tracking-tight">{item.name}</span>
+                  </Link>
+                )}
+              </div>
             );
           })}
-
-          {/* Cart Drawer Trigger Tab */}
-          <motion.button
-            whileTap={{ scale: 0.82 }}
-            onClick={() => setIsCartOpen(true)}
-            className="relative flex-1 py-1.5 px-1 flex flex-col items-center justify-center rounded-2xl text-gray-600 hover:text-[#0C534E] cursor-pointer"
-            aria-label="Open Cart"
-          >
-            <div className="relative flex flex-col items-center gap-0.5">
-              <ShoppingBag className="w-5 h-5 stroke-[2.2]" />
-              <span className="text-[0.68rem] font-bold tracking-tight">Cart</span>
-              {itemCount > 0 && (
-                <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  key={`mobile-cart-badge-${itemCount}`}
-                  transition={{ type: 'spring', stiffness: 500, damping: 15 }}
-                  className="absolute -top-1.5 -right-2 min-w-4 h-4 px-1 rounded-full bg-[#FFC800] text-[#093B37] text-[0.62rem] font-black flex items-center justify-center shadow"
-                >
-                  {itemCount}
-                </motion.span>
-              )}
-            </div>
-          </motion.button>
         </div>
       </nav>
 
