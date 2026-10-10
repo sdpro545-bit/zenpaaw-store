@@ -155,7 +155,7 @@ export default function HomePage() {
                 {/* Floating pill badge */}
                 <div className="absolute -bottom-2 left-2 sm:-left-2 z-20 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white text-[#162624] font-black text-xs shadow-xl flex items-center gap-2 border border-gray-100">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                  <span>100 Unbranded SKUs Active</span>
+                  <span>Smart Toys, Smarter Pets</span>
                 </div>
               </div>
             </div>
@@ -184,7 +184,7 @@ export default function HomePage() {
               desc: 'Chew bones, fetch discs, ballistic plush, and multi-knot tug ropes.',
               bg: 'bg-[#F0F7F6]',
               accent: 'text-[#0C534E]',
-              image: '/products/natural-rubber-bone-chew/image-1.webp',
+              image: '/images/category-dogs.jpg',
             },
             {
               title: 'Puppies',
@@ -193,7 +193,7 @@ export default function HomePage() {
               desc: 'Teething cooling rings, soft starter plush, and lightweight knots.',
               bg: 'bg-[#FFF6D6]',
               accent: 'text-[#E5B400]',
-              image: '/products/soft-rubber-puppy-teething-bone/image-1.webp',
+              image: '/images/category-puppies.jpg',
             },
             {
               title: 'Cats',
@@ -202,7 +202,7 @@ export default function HomePage() {
               desc: 'Feather teaser wands, sisal scratchers, catnip kickers, and ball tracks.',
               bg: 'bg-[#F0F7F6]',
               accent: 'text-[#0C534E]',
-              image: '/products/3-tier-tower-of-tracks-cat-toy/image-1.webp',
+              image: '/images/category-cats.jpg',
             },
           ].map((card) => (
             <Link
@@ -218,12 +218,13 @@ export default function HomePage() {
                 <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">{card.desc}</p>
               </div>
 
-              <div className="mt-8 relative aspect-square rounded-2xl overflow-hidden bg-white/70 p-4 flex items-center justify-center">
+              <div className="mt-8 relative aspect-square rounded-2xl overflow-hidden bg-white shadow-sm flex items-center justify-center">
                 <Image
                   src={card.image}
-                  alt={card.title}
+                  alt={`Smart pet toys for ${card.title}`}
                   fill
-                  className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
 
