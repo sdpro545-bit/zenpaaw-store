@@ -262,15 +262,8 @@ export const Header: React.FC = () => {
                       }}
                       className="absolute -top-4 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none z-20 overflow-visible"
                     >
-                      {/* Concentric circular cradle contour matching the round green circle */}
-                      <svg
-                        viewBox="0 0 96 40"
-                        className="absolute -top-2 left-1/2 -translate-x-1/2 w-24 h-10 text-white fill-current pointer-events-none drop-shadow-[0_-3px_5px_rgba(12,83,78,0.06)] overflow-visible"
-                      >
-                        <path d="M 0 24 L 15.75 24 A 8 8 0 0 0 22.92 19.56 A 28 28 0 0 1 73.08 19.56 A 8 8 0 0 0 80.25 24 L 96 24 L 96 40 L 0 40 Z" />
-                      </svg>
-                      {/* Elevated Circular Bubble with icon */}
-                      <div className="relative w-12 h-12 rounded-full bg-[#0C534E] text-[#FFC800] ring-4 ring-white shadow-[0_8px_24px_rgba(12,83,78,0.38)] flex items-center justify-center overflow-visible">
+                      {/* Elevated Circular Bubble with icon matching reference design */}
+                      <div className="relative w-12 h-12 rounded-full bg-[#0C534E] text-[#FFC800] ring-4 ring-white shadow-[0_8px_24px_rgba(12,83,78,0.35)] flex items-center justify-center overflow-visible">
                         <Icon className="w-5 h-5 stroke-[2.5]" />
                         {itemCount > 0 && (
                           <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-[#FFC800] text-[#093B37] text-[0.62rem] font-black flex items-center justify-center shadow">
@@ -319,15 +312,8 @@ export const Header: React.FC = () => {
                     }}
                     className="absolute -top-4 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none z-20 overflow-visible"
                   >
-                    {/* Concentric circular cradle contour matching the round green circle */}
-                    <svg
-                      viewBox="0 0 96 40"
-                      className="absolute -top-2 left-1/2 -translate-x-1/2 w-24 h-10 text-white fill-current pointer-events-none drop-shadow-[0_-3px_5px_rgba(12,83,78,0.06)] overflow-visible"
-                    >
-                      <path d="M 0 24 L 15.75 24 A 8 8 0 0 0 22.92 19.56 A 28 28 0 0 1 73.08 19.56 A 8 8 0 0 0 80.25 24 L 96 24 L 96 40 L 0 40 Z" />
-                    </svg>
-                    {/* Elevated Circular Bubble with icon */}
-                    <div className="relative w-12 h-12 rounded-full bg-[#0C534E] text-[#FFC800] ring-4 ring-white shadow-[0_8px_24px_rgba(12,83,78,0.38)] flex items-center justify-center overflow-visible">
+                    {/* Elevated Circular Bubble with icon matching reference design */}
+                    <div className="relative w-12 h-12 rounded-full bg-[#0C534E] text-[#FFC800] ring-4 ring-white shadow-[0_8px_24px_rgba(12,83,78,0.35)] flex items-center justify-center overflow-visible">
                       <Icon className="w-5 h-5 stroke-[2.5]" />
                     </div>
                   </motion.div>
