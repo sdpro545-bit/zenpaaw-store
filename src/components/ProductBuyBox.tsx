@@ -79,14 +79,19 @@ export function ProductBuyBox({ product, variants }: ProductBuyBoxProps) {
   return (
     <div className="space-y-6">
       {/* Price Display */}
-      <div className="flex items-baseline gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         <span className="text-3xl sm:text-4xl font-black text-[#0C534E] tabular-nums">
           ${price.toFixed(2)}
         </span>
         {compareAtPrice && compareAtPrice > price && (
-          <span className="text-base sm:text-lg text-gray-400 line-through tabular-nums">
-            ${compareAtPrice.toFixed(2)}
-          </span>
+          <>
+            <span className="text-base sm:text-lg text-gray-400 line-through tabular-nums font-semibold">
+              ${compareAtPrice.toFixed(2)}
+            </span>
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black tracking-wide">
+              Save {Math.round(((compareAtPrice - price) / compareAtPrice) * 100)}%
+            </span>
+          </>
         )}
       </div>
 

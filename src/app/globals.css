@@ -64,6 +64,12 @@ body {
   font-family: var(--font-sans);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+a, button, input, select, textarea {
+  touch-action: manipulation;
 }
 
 h1, h2, h3, .font-display {

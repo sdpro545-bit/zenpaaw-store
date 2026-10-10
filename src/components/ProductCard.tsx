@@ -52,7 +52,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, priority = fa
             )}
             {product.isBestSeller && !product.isFlagship && (
               <span className="px-3 py-1 rounded-full bg-[#FFC800] text-[#162624] text-[0.68rem] font-black tracking-wider uppercase shadow-md">
-                Staff Pick
+                Best Seller
               </span>
             )}
             {discountPercent > 0 && (

@@ -81,18 +81,18 @@ export const CartDrawer: React.FC = () => {
             onClick={() => setIsCartOpen(false)}
           />
 
-          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+          <div className="fixed inset-y-0 right-0 max-w-full flex">
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-              className="w-screen max-w-md bg-white shadow-2xl flex flex-col h-full"
+              className="w-screen max-w-full sm:max-w-md bg-white shadow-2xl flex flex-col h-full"
             >
               {/* Header */}
-              <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-[#FAFBF9]">
+              <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-100 flex items-center justify-between bg-[#FAFBF9]">
                 <div className="flex items-center gap-2.5">
-                  <h2 className="text-lg font-black text-[#162624] tracking-tight">Your Play Cart</h2>
+                  <h2 className="text-base sm:text-lg font-black text-[#162624] tracking-tight">Your Play Cart</h2>
                   <span className="px-2.5 py-0.5 rounded-full bg-[#0C534E] text-[#FFC800] text-xs font-bold">
                     {itemCount} {itemCount === 1 ? 'item' : 'items'}
                   </span>
@@ -109,19 +109,19 @@ export const CartDrawer: React.FC = () => {
               </div>
 
           {/* Free Shipping Progress Meter */}
-          <div className="px-6 py-3.5 bg-[#F0F7F6] border-b border-[#E2EBEA]">
-            <div className="flex items-center justify-between text-xs font-bold mb-1.5">
-              <span className="text-[#0C534E] flex items-center gap-1.5">
-                <Truck className="w-3.5 h-3.5 text-[#0C534E]" />
+          <div className="px-4 sm:px-6 py-3 bg-[#F0F7F6] border-b border-[#E2EBEA]">
+            <div className="flex items-center justify-between text-xs font-bold mb-1.5 gap-2">
+              <span className="text-[#0C534E] flex items-center gap-1.5 min-w-0">
+                <Truck className="w-4 h-4 text-[#0C534E] shrink-0" />
                 {isFreeShipping ? (
-                  <span className="text-[#0C534E]">Unlocked Free Standard Shipping.</span>
+                  <span className="text-[#0C534E] font-bold">Unlocked Free Standard Shipping!</span>
                 ) : (
-                  <span>
-                    Add <strong className="text-[#162624]">${amountNeededForFreeShipping.toFixed(2)}</strong> more for FREE shipping
+                  <span className="leading-tight">
+                    Add <strong className="text-[#162624] font-black">${amountNeededForFreeShipping.toFixed(2)}</strong> more for FREE shipping
                   </span>
                 )}
               </span>
-              <span className="text-gray-500 font-semibold">{Math.round(progressPercent)}%</span>
+              <span className="text-gray-600 font-bold shrink-0 tabular-nums">{Math.round(progressPercent)}%</span>
             </div>
             <div className="w-full h-2 rounded-full bg-gray-200 overflow-hidden">
               <div
@@ -132,7 +132,7 @@ export const CartDrawer: React.FC = () => {
           </div>
 
           {/* Cart Items List */}
-          <div className="flex-1 overflow-y-auto px-6 py-4 divide-y divide-gray-100">
+          <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 divide-y divide-gray-100">
             {cart.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center py-12">
                 <div className="w-20 h-20 rounded-full bg-[#F0F7F6] text-[#0C534E] flex items-center justify-center mb-4">
@@ -161,7 +161,7 @@ export const CartDrawer: React.FC = () => {
                     transition={{ duration: 0.2 }}
                     className="py-4 flex gap-4 items-center"
                   >
-                    <div className="w-20 h-20 rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden relative shrink-0">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden relative shrink-0">
                       <Image
                         src={item.product.images[0]}
                         alt={item.product.name}
@@ -174,22 +174,22 @@ export const CartDrawer: React.FC = () => {
                         <Link
                           href={`/product/${item.product.slug}`}
                           onClick={() => setIsCartOpen(false)}
-                          className="font-bold text-sm text-[#162624] hover:text-[#0C534E] line-clamp-1 transition"
+                          className="font-bold text-xs sm:text-sm text-[#162624] hover:text-[#0C534E] line-clamp-2 leading-snug transition"
                         >
                           {item.product.name}
                         </Link>
                         <button
                           onClick={() => removeFromCart(item.product.id)}
-                          className="text-gray-400 hover:text-red-500 p-1 transition"
+                          className="text-gray-400 hover:text-red-500 p-1 transition shrink-0"
                           title="Remove item"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
-                      <p className="text-xs text-gray-500 mb-2">{item.product.category}</p>
-                      <div className="flex items-center justify-between">
+                      <p className="text-[0.7rem] sm:text-xs text-gray-500 my-1">{item.product.category}</p>
+                      <div className="flex items-center justify-between gap-2 pt-1">
                         {/* Quantity Controller */}
-                        <div className="flex items-center border border-gray-200 rounded-full bg-white px-2 py-0.5">
+                        <div className="flex items-center border border-gray-200 rounded-full bg-white px-2 py-0.5 shrink-0">
                           <button
                             onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
                             className="p-1 hover:text-[#0C534E] text-gray-500 transition active:scale-90"
@@ -197,7 +197,7 @@ export const CartDrawer: React.FC = () => {
                           >
                             <Minus className="w-3 h-3" />
                           </button>
-                          <span className="w-6 text-center text-xs font-bold text-[#162624] tabular-nums">
+                          <span className="w-5 text-center text-xs font-bold text-[#162624] tabular-nums">
                             {item.quantity}
                           </span>
                           <button
@@ -229,7 +229,7 @@ export const CartDrawer: React.FC = () => {
                   <span>Complete the Playtime</span>
                 </div>
                 <div className="p-3 rounded-2xl bg-[#F8FAF9] border border-[#E2EBEA] flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-xl bg-white border border-gray-100 overflow-hidden relative shrink-0">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-white border border-gray-100 overflow-hidden relative shrink-0">
                     <Image
                       src={crossSellItem.images[0]}
                       alt={crossSellItem.name}
@@ -238,8 +238,8 @@ export const CartDrawer: React.FC = () => {
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h5 className="font-bold text-xs text-[#162624] truncate">{crossSellItem.name}</h5>
-                    <p className="text-[0.7rem] text-gray-500 truncate">{crossSellItem.tagline}</p>
+                    <h5 className="font-bold text-xs text-[#162624] line-clamp-1">{crossSellItem.name}</h5>
+                    <p className="text-[0.7rem] text-gray-500 line-clamp-1">{crossSellItem.tagline}</p>
                     <span className="text-xs font-extrabold text-[#0C534E]">${crossSellItem.price.toFixed(2)}</span>
                   </div>
                   <button
@@ -255,19 +255,19 @@ export const CartDrawer: React.FC = () => {
 
           {/* Footer & Checkout Area */}
           {cart.length > 0 && (
-            <div className="p-6 border-t border-gray-100 bg-[#FAFBF9] space-y-3">
+            <div className="p-4 sm:p-6 border-t border-gray-100 bg-[#FAFBF9] space-y-3 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))]">
               {/* Promo Code Input */}
               {appliedCoupon ? (
-                <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-[#F0F7F6] border border-[#A3D2CD] text-xs">
-                  <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-[#0C534E]" />
-                    <span className="font-bold text-[#0C534E]">
+                <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-[#F0F7F6] border border-[#A3D2CD] text-xs gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Check className="w-4 h-4 text-[#0C534E] shrink-0" />
+                    <span className="font-bold text-[#0C534E] break-words">
                       Code <strong>{appliedCoupon.code}</strong> applied ({appliedCoupon.description})
                     </span>
                   </div>
                   <button
                     onClick={removeCoupon}
-                    className="text-xs text-red-500 font-bold hover:underline"
+                    className="text-xs text-red-500 font-bold hover:underline shrink-0"
                   >
                     Remove
                   </button>
@@ -279,12 +279,12 @@ export const CartDrawer: React.FC = () => {
                     placeholder="Promo code (e.g., ZEN10)"
                     value={couponCodeInput}
                     onChange={(e) => setCouponCodeInput(e.target.value)}
-                    className="flex-1 px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-semibold uppercase outline-none focus:border-[#0C534E]"
+                    className="flex-1 min-w-0 px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-semibold uppercase outline-none focus:border-[#0C534E]"
                   />
                   <button
                     type="submit"
                     disabled={isApplyingCoupon}
-                    className="px-4 py-2 rounded-xl bg-gray-200 text-[#162624] hover:bg-gray-300 text-xs font-bold transition disabled:opacity-50"
+                    className="px-4 py-2 rounded-xl bg-gray-200 text-[#162624] hover:bg-gray-300 text-xs font-bold transition disabled:opacity-50 shrink-0"
                   >
                     Apply
                   </button>
@@ -320,15 +320,17 @@ export const CartDrawer: React.FC = () => {
               <Link
                 href="/checkout"
                 onClick={() => setIsCartOpen(false)}
-                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-[#FFC800] text-[#162624] font-extrabold text-sm hover:bg-[#E5B400] shadow-lg shadow-[#FFC800]/30 transition group"
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-[#FFC800] text-[#162624] font-extrabold text-sm hover:bg-[#E5B400] shadow-lg shadow-[#FFC800]/30 transition group active:scale-[0.98]"
               >
                 <span>Proceed to Secure Checkout</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition" />
               </Link>
 
-              <div className="flex items-center justify-center gap-1.5 text-[0.7rem] text-gray-400 font-medium pt-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#0C534E]" />
-                <span>256-Bit Encrypted Checkout • 30-Day Money-Back Guarantee</span>
+              <div className="flex flex-wrap items-center justify-center gap-1.5 text-[0.68rem] text-gray-500 font-medium pt-1 text-center leading-tight">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#0C534E] shrink-0" />
+                <span>256-Bit Encrypted Checkout</span>
+                <span>•</span>
+                <span>30-Day Money-Back Guarantee</span>
               </div>
             </div>
           )}

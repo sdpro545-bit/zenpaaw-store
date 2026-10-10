@@ -244,7 +244,8 @@ export const Header: React.FC = () => {
               <Link
                 key={item.name}
                 href={item.href}
-                className="relative flex-1 py-1.5 px-1 flex flex-col items-center justify-center rounded-2xl transition-colors"
+                prefetch={true}
+                className="relative flex-1 py-1.5 px-1 flex flex-col items-center justify-center rounded-2xl transition-colors touch-manipulation"
               >
                 {item.isActive && (
                   <motion.div
