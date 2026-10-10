@@ -40,7 +40,7 @@ export const ScrollToTopButton: React.FC = () => {
           transition={{ type: 'spring', stiffness: 420, damping: 26 }}
           onClick={scrollToTop}
           aria-label="Back to top"
-          className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black text-white hover:bg-neutral-800 active:bg-neutral-900 shadow-xl shadow-black/35 flex items-center justify-center cursor-pointer transition-transform hover:scale-110 active:scale-95 touch-manipulation group"
+          className="fixed bottom-[6.5rem] right-4 sm:bottom-8 sm:right-8 z-40 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-black text-white hover:bg-neutral-800 active:bg-neutral-900 shadow-xl shadow-black/35 flex items-center justify-center cursor-pointer transition-transform hover:scale-110 active:scale-95 touch-manipulation group"
         >
           {/* Thick rounded chevron up icon matching user reference image */}
           <svg
