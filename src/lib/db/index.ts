@@ -2,6 +2,8 @@ import { DatabaseSync } from 'node:sqlite';
 import path from 'node:path';
 import fs from 'node:fs';
 import { storeConfig } from '@/store.config';
+import rawCatalogSeed from '../../../data/catalog.seed.json';
+import { initialProducts } from '@/data/products';
 
 // Unified Database Layer for ZenPaaw Store
 // Supports local file-persisted relational SQLite store (zero-config, survives restarts),
@@ -289,90 +291,92 @@ function seedIfEmpty(db: DatabaseSync) {
     }
 
     // 3. Products
-    const seedJsonPath = path.resolve(process.cwd(), 'data', 'catalog.seed.json');
-    if (fs.existsSync(seedJsonPath)) {
-      const raw = fs.readFileSync(seedJsonPath, 'utf-8');
-      const catalog = JSON.parse(raw);
+    const catalogList: any[] = Array.isArray(rawCatalogSeed)
+      ? (rawCatalogSeed as any[])
+      : (((rawCatalogSeed as any)?.products) || []);
 
-      const prodStmt = db.prepare(`
-        INSERT OR REPLACE INTO products (
-          id, slug, title, summary, description, pet_types, category_id,
-          play_styles, chew_strength, status, brand_label, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `);
-      const varStmt = db.prepare(`
-        INSERT OR REPLACE INTO variants (
-          id, product_id, sku, option1_name, option1_value, option2_name, option2_value,
-          price_cents, cost_cents, compare_at_cents, weight_g, available
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `);
-      const imgStmt = db.prepare(`
-        INSERT OR REPLACE INTO product_images (
-          id, product_id, variant_id, url, alt, position, reviewed
-        ) VALUES (?, ?, ?, ?, ?, ?, 1)
-      `);
-      const claimStmt = db.prepare(`
-        INSERT OR REPLACE INTO claims (
-          id, product_id, key, value, source_url, verified
-        ) VALUES (?, ?, ?, ?, ?, ?)
-      `);
+    const prodStmt = db.prepare(`
+      INSERT OR REPLACE INTO products (
+        id, slug, title, summary, description, pet_types, category_id,
+        play_styles, chew_strength, status, brand_label, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    const varStmt = db.prepare(`
+      INSERT OR REPLACE INTO variants (
+        id, product_id, sku, option1_name, option1_value, option2_name, option2_value,
+        price_cents, cost_cents, compare_at_cents, weight_g, available
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    const imgStmt = db.prepare(`
+      INSERT OR REPLACE INTO product_images (
+        id, product_id, variant_id, url, alt, position, reviewed
+      ) VALUES (?, ?, ?, ?, ?, ?, 1)
+    `);
+    const claimStmt = db.prepare(`
+      INSERT OR REPLACE INTO claims (
+        id, product_id, key, value, source_url, verified
+      ) VALUES (?, ?, ?, ?, ?, ?)
+    `);
 
-      for (const p of catalog.products || []) {
-        prodStmt.run(
+    for (const p of catalogList) {
+      prodStmt.run(
+        p.id,
+        p.slug,
+        p.title || p.name || 'Pet Toy',
+        p.summary || '',
+        p.description || '',
+        JSON.stringify(p.petTypes || p.pet_types || ['Dogs']),
+        p.categoryId || p.category_id || 'dog-chew',
+        JSON.stringify(p.playStyles || p.play_styles || ['chew']),
+        p.chewStrength || p.chew_strength || 'moderate',
+        p.status || 'active',
+        p.brandLabel || p.brand_label || '',
+        p.createdAt || p.created_at || new Date().toISOString(),
+        p.updatedAt || p.updated_at || new Date().toISOString()
+      );
+
+      for (const v of p.variants || []) {
+        varStmt.run(
+          v.id,
           p.id,
-          p.slug,
-          p.title,
-          p.summary,
-          p.description,
-          JSON.stringify(p.pet_types || []),
-          p.category_id,
-          JSON.stringify(p.play_styles || []),
-          p.chew_strength || 'moderate',
-          p.status || 'active',
-          p.brand_label || '',
-          p.created_at || new Date().toISOString(),
-          p.updated_at || new Date().toISOString()
+          v.sku,
+          v.option1Name || v.option1_name || null,
+          v.option1Value || v.option1_value || null,
+          v.option2Name || v.option2_name || null,
+          v.option2Value || v.option2_value || null,
+          v.priceCents || v.price_cents || 1499,
+          v.costCents || v.cost_cents || Math.round((v.priceCents || v.price_cents || 1499) * 0.4),
+          v.compareAtCents || v.compare_at_cents || null,
+          v.weightG || v.weight_g || 200,
+          v.available !== false ? 1 : 0
         );
+      }
 
-        for (const v of p.variants || []) {
-          varStmt.run(
-            v.id,
-            p.id,
-            v.sku,
-            v.option1_name || null,
-            v.option1_value || null,
-            v.option2_name || null,
-            v.option2_value || null,
-            v.price_cents,
-            v.cost_cents || Math.round(v.price_cents * 0.4),
-            v.compare_at_cents || null,
-            v.weight_g || 200,
-            v.available !== false ? 1 : 0
-          );
-        }
+      let imgPos = 0;
+      for (const img of p.images || []) {
+        const imgUrl = typeof img === 'string' ? img : img.url;
+        const imgAlt = typeof img === 'string' ? (p.title || p.name) : (img.alt || p.title || p.name);
+        const imgId = typeof img === 'string' ? `${p.id}-img-${imgPos}` : (img.id || `${p.id}-img-${imgPos}`);
+        const varId = typeof img === 'string' ? null : (img.variantId || img.variant_id || null);
+        imgStmt.run(
+          imgId,
+          p.id,
+          varId,
+          imgUrl,
+          imgAlt,
+          imgPos++
+        );
+      }
 
-        let imgPos = 0;
-        for (const img of p.images || []) {
-          imgStmt.run(
-            img.id || `${p.id}-img-${imgPos}`,
-            p.id,
-            img.variant_id || null,
-            img.url,
-            img.alt || p.title,
-            imgPos++
-          );
-        }
-
-        for (const c of p.claims || []) {
-          claimStmt.run(
-            c.id || `${p.id}-clm-${c.key}`,
-            p.id,
-            c.key,
-            c.value,
-            c.source_url || null,
-            c.verified ? 1 : 0
-          );
-        }
+      for (const c of p.claims || []) {
+        claimStmt.run(
+          c.id || `${p.id}-clm-${c.key}`,
+          p.id,
+          c.key,
+          c.value,
+          c.sourceUrl || c.source_url || null,
+          c.verified ? 1 : 0
+        );
       }
     }
   } catch (err) {
@@ -591,21 +595,107 @@ export const db = {
       products.sort((a, b) => (b.variants[0]?.priceCents || 0) - (a.variants[0]?.priceCents || 0));
     }
 
+    if (products.length === 0) {
+      let fb = initialProducts.map((p) => this.fallbackToProductRecord(p));
+      if (filters?.categoryId && filters.categoryId !== 'All') {
+        fb = fb.filter((p) => p.categoryId === filters.categoryId);
+      }
+      if (filters?.petType) {
+        fb = fb.filter((p) => p.petTypes.includes(filters.petType!));
+      }
+      if (filters?.playStyle) {
+        fb = fb.filter((p) => p.playStyles.includes(filters.playStyle!));
+      }
+      if (filters?.chewStrength) {
+        fb = fb.filter((p) => p.chewStrength === filters.chewStrength);
+      }
+      if (filters?.query) {
+        const q = filters.query.toLowerCase();
+        fb = fb.filter((p) => p.title.toLowerCase().includes(q) || p.summary.toLowerCase().includes(q));
+      }
+      if (filters?.sort === 'price_asc') {
+        fb.sort((a, b) => (a.variants[0]?.priceCents || 0) - (b.variants[0]?.priceCents || 0));
+      } else if (filters?.sort === 'price_desc') {
+        fb.sort((a, b) => (b.variants[0]?.priceCents || 0) - (a.variants[0]?.priceCents || 0));
+      }
+      return fb;
+    }
+
     return products;
   },
 
   getProductBySlug(slug: string): ProductRecord | null {
-    const s = getSqlite();
-    const row = s.prepare('SELECT * FROM products WHERE slug = ?').get(slug) as any;
-    if (!row) return null;
-    return this.hydrateProduct(row);
+    try {
+      const s = getSqlite();
+      const row = s.prepare('SELECT * FROM products WHERE slug = ?').get(slug) as any;
+      if (row) return this.hydrateProduct(row);
+    } catch {
+      // Fallback
+    }
+    const fallback = initialProducts.find((p) => p.slug === slug);
+    if (fallback) return this.fallbackToProductRecord(fallback);
+    return null;
   },
 
   getProductById(id: string): ProductRecord | null {
-    const s = getSqlite();
-    const row = s.prepare('SELECT * FROM products WHERE id = ?').get(id) as any;
-    if (!row) return null;
-    return this.hydrateProduct(row);
+    try {
+      const s = getSqlite();
+      const row = s.prepare('SELECT * FROM products WHERE id = ?').get(id) as any;
+      if (row) return this.hydrateProduct(row);
+    } catch {
+      // Fallback
+    }
+    const fallback = initialProducts.find((p) => p.id === id);
+    if (fallback) return this.fallbackToProductRecord(fallback);
+    return null;
+  },
+
+  fallbackToProductRecord(p: any): ProductRecord {
+    return {
+      id: p.id,
+      slug: p.slug,
+      title: p.title || p.name || 'Pet Toy',
+      summary: p.summary || '',
+      description: p.description || '',
+      petTypes: p.petTypes || ['Dogs'],
+      categoryId: p.categoryId || 'dog-chew',
+      playStyles: p.playStyles || ['chew'],
+      chewStrength: p.chewStrength || 'moderate',
+      status: 'active',
+      brandLabel: '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      variants: (p.variants || []).map((v: any, idx: number) => ({
+        id: v.id || `${p.id}-var-${idx}`,
+        productId: p.id,
+        sku: v.sku || `ZP-${p.id}-${idx}`,
+        option1Name: v.option1Name || v.option1_name || undefined,
+        option1Value: v.option1Value || v.option1_value || undefined,
+        option2Name: v.option2Name || v.option2_name || undefined,
+        option2Value: v.option2Value || v.option2_value || undefined,
+        priceCents: v.priceCents || v.price_cents || 1499,
+        costCents: v.costCents || v.cost_cents || 600,
+        compareAtCents: v.compareAtCents || v.compare_at_cents || undefined,
+        weightG: v.weightG || v.weight_g || 200,
+        available: v.available !== false,
+      })),
+      images: (p.images || []).map((img: any, idx: number) => ({
+        id: typeof img === 'string' ? `${p.id}-img-${idx}` : (img.id || `${p.id}-img-${idx}`),
+        productId: p.id,
+        variantId: null,
+        url: typeof img === 'string' ? img : img.url,
+        alt: typeof img === 'string' ? (p.title || p.name) : (img.alt || p.title || p.name),
+        position: idx,
+      })),
+      claims: (p.claims || []).map((c: any) => ({
+        id: c.id || `${p.id}-clm-${c.key}`,
+        productId: p.id,
+        key: c.key,
+        value: c.value,
+        sourceUrl: c.sourceUrl || c.source_url || undefined,
+        verified: Boolean(c.verified),
+      })),
+    };
   },
 
   hydrateProduct(r: any): ProductRecord {

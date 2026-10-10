@@ -17,7 +17,7 @@ export const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-[#093B37] text-white pt-16 pb-12 border-t border-[#0C534E]">
+    <footer className="bg-[#093B37] text-white pt-16 pb-32 lg:pb-12 border-t border-[#0C534E]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Top Trust Pillars Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pb-12 border-b border-[#0C534E]/60">

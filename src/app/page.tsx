@@ -202,7 +202,7 @@ export default function HomePage() {
               desc: 'Feather teaser wands, sisal scratchers, catnip kickers, and ball tracks.',
               bg: 'bg-[#F0F7F6]',
               accent: 'text-[#0C534E]',
-              image: '/products/telescopic-carbon-fiber-cat-wand/image-1.webp',
+              image: '/products/3-tier-tower-of-tracks-cat-toy/image-1.webp',
             },
           ].map((card) => (
             <Link

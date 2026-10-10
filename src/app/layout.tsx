@@ -100,7 +100,7 @@ export default function RootLayout({
           <Suspense fallback={<div className="h-16 bg-white border-b border-gray-100" />}>
             <Header />
           </Suspense>
-          <main className="flex-grow pb-20 md:pb-0">{children}</main>
+          <main className="flex-grow pb-24 lg:pb-0">{children}</main>
           <CartDrawer />
           <Footer />
         </CartProvider>

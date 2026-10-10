@@ -16,6 +16,8 @@ import {
   Home,
   Grid,
   ChevronRight,
+  Bone,
+  Sparkles,
 } from 'lucide-react';
 
 export const Header: React.FC = () => {
@@ -225,57 +227,76 @@ export const Header: React.FC = () => {
         </AnimatePresence>
       </header>
 
-      {/* Mobile Bottom Tab Bar (Section 9.1 & 10) */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/98 backdrop-blur-md border-t border-[#E2EBEA] px-4 py-2.5 flex items-center justify-around shadow-2xl">
-        <Link
-          href="/"
-          className={`flex flex-col items-center gap-0.5 text-[0.65rem] font-bold active:scale-90 transition-transform ${
-            pathname === '/' ? 'text-[#0C534E]' : 'text-gray-500'
-          }`}
-        >
-          <Home className="w-5 h-5" />
-          <span>Home</span>
-        </Link>
-        <Link
-          href="/shop"
-          className={`flex flex-col items-center gap-0.5 text-[0.65rem] font-bold active:scale-90 transition-transform ${
-            pathname.startsWith('/shop') || pathname.startsWith('/c')
-              ? 'text-[#0C534E]'
-              : 'text-gray-500'
-          }`}
-        >
-          <Grid className="w-5 h-5" />
-          <span>Shop</span>
-        </Link>
-        <button
-          onClick={() => setIsSearchOpen(true)}
-          className="flex flex-col items-center gap-0.5 text-[0.65rem] font-bold text-gray-500 active:scale-90 transition-transform cursor-pointer"
-        >
-          <Search className="w-5 h-5" />
-          <span>Search</span>
-        </button>
-        <Link
-          href="/wishlist"
-          className={`flex flex-col items-center gap-0.5 text-[0.65rem] font-bold active:scale-90 transition-transform ${
-            pathname === '/wishlist' ? 'text-[#0C534E]' : 'text-gray-500'
-          }`}
-        >
-          <Heart className="w-5 h-5" />
-          <span>Wishlist</span>
-        </Link>
-        <button
-          onClick={() => setIsCartOpen(true)}
-          className="flex flex-col items-center gap-0.5 text-[0.65rem] font-bold text-[#0C534E] relative active:scale-90 transition-transform cursor-pointer"
-        >
-          <ShoppingBag className="w-5 h-5" />
-          <span>Cart</span>
-          {itemCount > 0 && (
-            <span className="absolute -top-1 right-1.5 w-4 h-4 rounded-full bg-[#FFC800] text-[#162624] text-[0.6rem] font-black flex items-center justify-center">
-              {itemCount}
-            </span>
-          )}
-        </button>
-      </div>
+      {/* Mobile & Tablet Bottom Tab Bar (Responsive for all screens < 1024px) */}
+      <nav
+        aria-label="Mobile and tablet navigation"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-[#0C534E]/10 px-2 sm:px-6 py-2 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))]"
+      >
+        <div className="max-w-md mx-auto flex items-center justify-around gap-1">
+          {[
+            { name: 'Home', href: '/', icon: Home, isActive: pathname === '/' },
+            { name: 'Shop', href: '/shop', icon: Grid, isActive: pathname === '/shop' },
+            { name: 'Dogs', href: '/c/dogs', icon: Bone, isActive: pathname.startsWith('/c/dogs') },
+            { name: 'Cats', href: '/c/cats', icon: Sparkles, isActive: pathname.startsWith('/c/cats') },
+          ].map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className="relative flex-1 py-1.5 px-1 flex flex-col items-center justify-center rounded-2xl transition-colors"
+              >
+                {item.isActive && (
+                  <motion.div
+                    layoutId="mobileActiveTabIndicator"
+                    className="absolute inset-0 bg-[#0C534E] rounded-2xl shadow-sm"
+                    transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                  />
+                )}
+                <motion.div
+                  whileTap={{ scale: 0.82 }}
+                  className={`flex flex-col items-center gap-0.5 z-10 transition-colors duration-200 ${
+                    item.isActive ? 'text-[#FFC800]' : 'text-gray-600 hover:text-[#0C534E]'
+                  }`}
+                >
+                  <Icon className="w-5 h-5 stroke-[2.2]" />
+                  <span
+                    className={`text-[0.68rem] tracking-tight ${
+                      item.isActive ? 'font-black text-white' : 'font-bold'
+                    }`}
+                  >
+                    {item.name}
+                  </span>
+                </motion.div>
+              </Link>
+            );
+          })}
+
+          {/* Cart Drawer Trigger Tab */}
+          <motion.button
+            whileTap={{ scale: 0.82 }}
+            onClick={() => setIsCartOpen(true)}
+            className="relative flex-1 py-1.5 px-1 flex flex-col items-center justify-center rounded-2xl text-gray-600 hover:text-[#0C534E] cursor-pointer"
+            aria-label="Open Cart"
+          >
+            <div className="relative flex flex-col items-center gap-0.5">
+              <ShoppingBag className="w-5 h-5 stroke-[2.2]" />
+              <span className="text-[0.68rem] font-bold tracking-tight">Cart</span>
+              {itemCount > 0 && (
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  key={`mobile-cart-badge-${itemCount}`}
+                  transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+                  className="absolute -top-1.5 -right-2 min-w-4 h-4 px-1 rounded-full bg-[#FFC800] text-[#093B37] text-[0.62rem] font-black flex items-center justify-center shadow"
+                >
+                  {itemCount}
+                </motion.span>
+              )}
+            </div>
+          </motion.button>
+        </div>
+      </nav>
 
       {/* Global Instant Search Modal */}
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
